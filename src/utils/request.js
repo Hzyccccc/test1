@@ -5,9 +5,9 @@ import { getUser } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-  timeout: 5000, // request timeout
-  withCredentials: true,
+  baseURL: 'http://172.10.0.130:8019', // url = base url + request url
+  timeout: 50000, // request timeout
+  // withCredentials: true,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded'
   }
@@ -38,6 +38,8 @@ service.interceptors.request.use(
   error => {
     // do something with request error
     console.log(error) // for debug
+    console.log('报错')
+    
     return Promise.reject(error)
   }
 )
@@ -73,6 +75,8 @@ service.interceptors.response.use(
     }
   },
   error => {
+    console.log(error.code);
+    
     if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1) {
       Message.error({ message: '请求超时!' })
     } else {

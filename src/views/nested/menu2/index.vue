@@ -2,172 +2,72 @@
   <div>
     <!-- 头部 -->
     <el-form :inline="true" class="demo-form-inline">
-      <el-form-item label="登陆名称">
-        <el-input placeholder="审批人" />
+      <el-form-item label="角色名称">
+        <el-input placeholder="" v-model="userName"/>
       </el-form-item>
-      <el-form-item label="用户名称">
-        <el-input placeholder="审批人" />
-      </el-form-item>
+
+      <!-- <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
+        <el-form :model="form">
+          <el-form-item label="登陆名称" :label-width="formLabelWidth">
+            <el-input v-model="form.name" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        </div>
+      </el-dialog> -->
 
       <el-form-item>
-        <el-button type="primary" @click="fetchData">查询</el-button>
-        <el-button type="primary">重置</el-button>
-        <el-button type="primary">分配角色</el-button>
-        <el-button type="primary">分配仓库</el-button>
-        <el-button type="primary" @click="dialogFormVisible = true">新增用户</el-button>
+        <el-button type="primary" @click="typeOfr">查询</el-button>
+        <el-button type="primary" @click="moveNull">查询</el-button>
+        <el-button type="primary" >重置</el-button>
+        <el-button type="primary">分配功能</el-button>
+        <el-button type="primary">分配按钮</el-button>
+        <el-button v-show="flag" type="primary">删除</el-button>
       </el-form-item>
     </el-form>
-    <!-- 新增用户 -->
-    <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
+
+    <el-dialog title="编辑角色信息" :visible.sync="dialogFormVisible">
       <el-form :model="form">
         <el-form-item label="登陆名称" :label-width="formLabelWidth">
           <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="所属公司" :label-width="formLabelWidth">
-          <el-select v-model="form.region" placeholder="请选择公司">
-            <el-option label="区域一" value="shanghai" />
-            <el-option label="区域二" value="beijing" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="部门" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户排序" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="职位" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="联系电话" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="电子邮箱" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="描述" :label-width="formLabelWidth">
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            placeholder="暂无备注信息"
-            autocomplete="off"
-          />
-
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-      </div>
-    </el-dialog>
-    <!-- 修改 -->
-    <el-dialog title="修改信息" :visible.sync="dialogFormVisible">
-      <el-form :model="form">
-        <el-form-item label="登陆名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="所属公司" :label-width="formLabelWidth">
-          <el-select v-model="form.region" placeholder="请选择公司">
-            <el-option label="区域一" value="shanghai" />
-            <el-option label="区域二" value="beijing" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="部门" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户排序" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="职位" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="联系电话" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="电子邮箱" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="描述" :label-width="formLabelWidth">
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            placeholder="暂无备注信息"
-            autocomplete="off"
-          />
-
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">保存</el-button>
       </div>
     </el-dialog>
     <!-- 表单 -->
+
     <el-table
-      :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+      ref="multipleTable"
+      :data="tableData3"
+      fixed
+      tooltip-effect="dark"
       style="width: 100%"
-      size="mini"
+      @selection-change="handleSelectionChange"
     >
       <el-table-column
-        label="登陆名称"
-        prop="date"
+        type="selection"
+        width="55"
       />
       <el-table-column
-        label="用户名称"
+        label="品名"
+        width="120"
+      />
+      <el-table-column
         prop="name"
+        label="型号"
+        width="120"
       />
+
       <el-table-column
-        label="用户名称"
-        prop="name"
-      />
-      <el-table-column
-        label="职业"
-        prop="name"
-      />
-      <el-table-column
-        label="部门"
-        prop="name"
-      />
-      <el-table-column
-        label="所属公司"
-        prop="name"
-      />
-      <el-table-column
-        label="电子邮箱"
-        prop="name"
-      />
-      <el-table-column
-        label="电话号码"
-        prop="name"
-      />
-      <el-table-column
-        label="用户排序"
-        prop="name"
-      />
-      <el-table-column
-        label="描述"
-        prop="name"
-      />
-      <el-table-column
-        label="描述"
-        prop="name"
-      />
-      <el-table-column
-        id="rightTab"
-        align="right"
-        width="200px"
+        prop="address"
+        label="操作"
+        show-overflow-tooltip
       >
-        <!-- <template slot="header" slot-scope="scope">
-        <el-input
-          v-model="search"
-          size="mini"
-          placeholder="输入关键字搜索"/>
-      </template> -->
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -185,23 +85,45 @@
         </template>
       </el-table-column>
     </el-table>
+
     <!-- 分页 -->
     <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="1000"
-      class="pagin"
-    />
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page.sync="currentPage2"
+      :page-sizes="[10, 20, 50, 100]"
+      :page-size="10"
+      layout="sizes, prev, pager, next"
+      :page-count="total">
+    </el-pagination>
   </div>
 </template>
 
 <script>
-import { getUserList } from '@/api/table'
+// import { getTo } from '@/api/table'
+
 export default {
-  name: 'Menu2',
+  name: 'Menu3',
   data() {
     return {
-      tableData: [],
+      userName:'',
+      tableData3: [{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1517 弄'
+      }, {
+        date: '2016-05-01',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1519 弄'
+      }, {
+        date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1516 弄'
+      }],
       search: '',
       dialogTableVisible: false,
       dialogFormVisible: false,
@@ -215,29 +137,79 @@ export default {
         resource: '',
         desc: ''
       },
-      formLabelWidth: '120px'
+      formLabelWidth: '120px',
+      flag: false,
+      checkDom: '',
+      idArray: [],
+      // 第几页
+      currentPage: 1,
+      //默认每页显示页码
+      pageSize:10,
+      currentPage2:1,
+      //总页码数
+      total : null
 
     }
   },
   created() {
-    this.fetchData()
+    this.getUserList()
   },
   methods: {
+    // 修改
     handleEdit(index, row) {
       console.log(index, row)
     },
+    // 删除
     handleDelete(index, row) {
       console.log(index, row)
     },
-    fetchData() {
-      getUserList().then(response => {
-        console.log(response)
+   // 请求用户数据
+    getUserList() {
+      this.$http.get('/organization/getOrganizationTree',{
+        id: 1
+      }).then(res => {
+        console.log(res)
+        console.log('11')
       })
-      // this.$axios.get('/user/getUserList?search=&currentPage=1&pageSize=15').then((res) => {
-      //   console.log(res);
+    },
+    //清空搜索列表
+    moveNull(){
+      this.userName = ''
+    },
+    // 查询
+    typeOfr(){
 
-      // })
-    }
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
+    //分页功能
+    getInfo() {
+        
+        this.$http.get('/user/getUserList',{
+          search: {"userName":"","loginName":""},
+          currentPage: this.currentPage,
+          pageSize: this.pageSize
+        }).then(res =>{
+          this.tableData = res.data.page.rows
+          this.total = Math.ceil(res.data.page.total / this.pageSize)
+                   
+        })
+    },
+      handleSelectionChange(val) {
+      this.multipleSelection = val
+      
+      },  
+      handleSizeChange(val) {     
+        this.pageSize = val
+        console.log(this.pageSize);
+        
+        this.getInfo()
+      },
+      handleCurrentChange(val) {     
+        this.currentPage = val;
+        this.getInfo()
+      },
   }
 }
 </script>

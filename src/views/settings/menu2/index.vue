@@ -192,11 +192,14 @@
     </el-table>
     <!-- 分页 -->
     <el-pagination
-      backgrounds
-      layout="prev, pager, next"
-      :total="1000"
-      class="pagin"
-    />
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page.sync="currentPage2"
+      :page-sizes="[10, 20, 50, 100]"
+      :page-size="10"
+      layout="sizes, prev, pager, next"
+      :page-count="total">
+    </el-pagination>
   </div>
 </template>
 
@@ -236,7 +239,14 @@ export default {
         desc: ''
       },
       formLabelWidth: '120px',
-      palal: '<el-checkbox/>'
+      palal: '<el-checkbox/>',
+      // 第几页
+      currentPage: 1,
+      //默认每页显示页码
+      pageSize:10,
+      currentPage2:1,
+      //总页码数
+      total : null
 
     }
   },
@@ -258,7 +268,34 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
-    }
+    },
+    //分页功能
+    getInfo() {
+        
+        this.$http.get('/user/getUserList',{
+          search: {"userName":"","loginName":""},
+          currentPage: this.currentPage,
+          pageSize: this.pageSize
+        }).then(res =>{
+          this.tableData = res.data.page.rows
+          this.total = Math.ceil(res.data.page.total / this.pageSize)
+                   
+        })
+    },
+      handleSelectionChange(val) {
+      this.multipleSelection = val
+      
+      },  
+      handleSizeChange(val) {     
+        this.pageSize = val
+        console.log(this.pageSize);
+        
+        this.getInfo()
+      },
+      handleCurrentChange(val) {     
+        this.currentPage = val;
+        this.getInfo()
+      },
 
   }
 }

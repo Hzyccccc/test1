@@ -59,19 +59,19 @@ export const constantRoutes = [
         path: 'menu1',
         component: () => import('@/views/nested/menu1/index'), // Parent router-view
         name: 'Menu1',
-        meta: { title: '部门管理', noCache: true }
+        meta: { title: '用户管理', noCache: true }
       },
       {
         path: 'menu2',
         component: () => import('@/views/nested/menu2/index'),
         name: 'Menu2',
-        meta: { title: '用户管理', noCache: true }
+        meta: { title: '角色管理', noCache: true }
       },
       {
         path: 'menu3',
         component: () => import('@/views/nested/menu3/index'),
         name: 'Menu3',
-        meta: { title: '角色管理', noCache: true }
+        meta: { title: '部门管理', noCache: true }
       },
       {
         path: 'menu4',

@@ -1,122 +1,105 @@
 <template>
   <div>
-    <!-- 头部 -->
-    <el-form :inline="true" class="demo-form-inline">
-      <el-form-item label="角色名称">
-        <el-input placeholder="" />
+    <!-- 树状结构 -->
+    <div class="custom-tree-container">
+      <div class="block">
+        <p>商品类别列表</p>
+        <el-tree
+          :data="data"
+          show-checkbox
+          node-key="id"
+          default-expand-all
+          :expand-on-click-node="false"
+          
+          :render-content="renderContent"
+        />
+      </div>
+    </div>
+    <!-- 添加弹窗 -->
+    <el-dialog title="新增商品类别" :visible.sync="dialogFormVisible">
+
+      <el-form-item label="上级目录" :label-width="formLabelWidth">
+        <el-select v-model="form.region" placeholder="请选择公司">
+          <el-option label="区域一" value="shanghai" />
+          <el-option label="区域二" value="beijing" />
+        </el-select>
       </el-form-item>
-
-      <!-- <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
-        <el-form :model="form">
-          <el-form-item label="登陆名称" :label-width="formLabelWidth">
-            <el-input v-model="form.name" autocomplete="off"></el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-        </div>
-      </el-dialog> -->
-
-      <el-form-item>
-        <el-button type="primary">查询</el-button>
-        <el-button type="primary">重置</el-button>
-        <el-button type="primary">分配功能</el-button>
-        <el-button type="primary">分配按钮</el-button>
-        <el-button v-show="flag" type="primary">删除</el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-dialog title="编辑角色信息" :visible.sync="dialogFormVisible">
       <el-form :model="form">
-        <el-form-item label="登陆名称" :label-width="formLabelWidth">
+        <el-form-item label="名称" :label-width="formLabelWidth">
           <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
       </el-form>
+      <el-form :model="form">
+        <el-form-item label="编号" :label-width="formLabelWidth">
+          <el-input v-model="form.name" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <el-form :model="form">
+        <el-form-item label="序号" :label-width="formLabelWidth">
+          <el-input v-model="form.name" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <el-form-item label="备注" :label-width="formLabelWidth">
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 2, maxRows: 4}"
+          placeholder="暂无备注信息"
+          autocomplete="off"
+        />
+
+      </el-form-item>
+
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">保存</el-button>
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false ;add()">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 表单 -->
-
-    <el-table
-      ref="multipleTable"
-      :data="tableData3"
-      fixed
-      tooltip-effect="dark"
-      style="width: 100%"
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column
-        type="selection"
-        width="55"
-      />
-      <el-table-column
-        label="品名"
-        width="120"
-      />
-      <el-table-column
-        prop="name"
-        label="型号"
-        width="120"
-      />
-
-      <el-table-column
-        prop="address"
-        label="操作"
-        show-overflow-tooltip
-      >
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            @click="handleEdit(scope.$index, scope.row)"
-          >
-            <span @click="dialogFormVisible = true">
-              修改
-            </span>
-          </el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            @click="handleDelete(scope.$index, scope.row)"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 分页 -->
-    <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="1000"
-      class="pagin"
-    />
+    <el-button type="primary" @click="dialogFormVisible = true">新增用户</el-button>
   </div>
 </template>
-
 <script>
+let id = 1000
+
 export default {
-  name: 'Menu3',
+  name: 'SettingsMenu1',
   data() {
+    const data = [{
+      id: 1,
+      label: '一级 1',
+      children: [{
+        id: 4,
+        label: '二级 1-1',
+        children: [{
+          id: 9,
+          label: '三级 1-1-1'
+        }, {
+          id: 10,
+          label: '三级 1-1-2'
+        }]
+      }]
+    }, {
+      id: 2,
+      label: '一级 2',
+      children: [{
+        id: 5,
+        label: '二级 2-1'
+      }, {
+        id: 6,
+        label: '二级 2-2'
+      }]
+    }, {
+      id: 3,
+      label: '一级 3',
+      children: [{
+        id: 7,
+        label: '二级 3-1'
+      }, {
+        id: 8,
+        label: '二级 3-2'
+      }]
+    }]
     return {
-      tableData3: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
+      data: JSON.parse(JSON.stringify(data)),
       search: '',
       dialogTableVisible: false,
       dialogFormVisible: false,
@@ -130,47 +113,70 @@ export default {
         resource: '',
         desc: ''
       },
-      formLabelWidth: '120px',
-      flag: false,
-      checkDom: '',
-      idArray: []
+      formLabelWidth: '120px'
 
+    }
+  },
+
+  methods: {
+    append(data) {
+      this.dialogFormVisible = true
+    },
+    add(data) {
+      if (!this.dialogFormVisible) {
+        const newChild = { id: id++, label: 'testtest', children: [] }
+        if (!data.children) {
+          this.$set(data, 'children', [])
+        }
+        data.children.push(newChild)
+      }
+    },
+
+    remove(node, data) {
+      const parent = node.parent
+      const children = parent.data.children || parent.data
+      const index = children.findIndex(d => d.id === data.id)
+      children.splice(index, 1)
+    },
+
+    renderContent(h, { node, data, store }) {
+      return (
+        <span class='custom-tree-node'>
+          <span>{node.label}</span>
+          <span>
+            <el-button size='mini' type='text' on-click={ () => this.append(data) }>添加</el-button>
+            <el-button size='mini' type='text' on-click={ () => this.remove(node, data) }>删除</el-button>
+          </span>
+        </span>)
+    },
+    //请求部门列表
+    getOrganizationTree(){
+      this.$http.get('organization/getOrganizationTree',{
+        id : -1
+      }).then(res=>{
+        console.log(res.data);
+        
+      })
     }
   },
   created() {
-    this.getUserList()
+    this.getOrganizationTree()
   },
-  methods: {
-    // 修改
-    handleEdit(index, row) {
-      console.log(index, row)
-    },
-    // 删除
-    handleDelete(index, row) {
-      console.log(index, row)
-    },
-    // 请求用户数据
-    // getUserList() {
-    //   this.$http.get('userBusiness/update?id=1').then(res => {
-    //     console.log(res.data)
-    //     console.log('11')
-    //   })
-    // },
-
-    handleSelectionChange(val) {
-      this.multipleSelection = val
-    }
-  }
 }
 </script>
-<style lang="scss" scoped>
-  .demo-form-inline {
-    margin-top: 10px;
-    margin-left: 10px;
-  }
-  .pagin {
-      padding-top: 10px;
-      float: right;
-  }
-</style>
 
+<style lang="scss" >
+    .custom-tree-node {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+        padding-right: 8px;
+    }
+    .block {
+        p {
+            padding: 10px;
+        }
+    }
+</style>

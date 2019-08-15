@@ -15,10 +15,10 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { loginame, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const data = response.result
+      login({ loginame: loginame, password: password }).then(response => {
+        const data = response.data.user
         commit('SET_USER_INFO', data)
         setUser(data)
         resolve()

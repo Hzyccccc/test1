@@ -6,4 +6,21 @@ export function getUserList(params) {
     method: 'post',
     params
   })
+} 
+
+export default {
+  get(url, params) {
+  return request({
+    url,
+    method: 'get',
+    params
+  })
+},
+  post(url,params){
+    return request({
+      url,
+      method: 'post',
+      params
+    })
+  }
 }
