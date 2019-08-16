@@ -129,15 +129,41 @@ export const constantRoutes = [
     children: [
       {
         path: 'purchaseOrder',
-        component: () => import('@/views/purchaseAdmin/purchaseOrder/index'),
-        name: 'settings-menu1',
+        component: () => import('@/views/purchaseAdmin/purchaseOrder'),
+        name: 'purchaseOrder',
         meta: { title: '采购订单', noCache: true }
       },
       {
-        path: 'purchaseOrder',
-        component: () => import('@/views/purchaseAdmin/purchaseOrder/index'),
-        name: 'settings-menu1',
-        meta: { title: '采购订单', noCache: true }
+        path: 'addOrderInfo',
+        component: () => import('@/views/purchaseAdmin/addOrderInfo'),
+        name: 'addOrderInfo',
+        meta: { title: '添加采购订单信息', noCache: true },
+        hidden: true
+      }
+    ]
+  },
+  /*商品类别*/
+  {
+    path: '/commodity',
+    component: Layout,
+    redirect: '/commodity/export-excel',
+    name: '商品管理',
+    meta: {
+      title: '商品管理',
+      icon: 'commodity'
+    },
+    children: [
+      {
+        path: 'category',
+        component: ()=>import('../views/commodity/category'),
+        name: '商品类别',
+        meta: { title: '商品类别' }
+      },
+      {
+        path: 'information',
+        component: ()=>import('../views/commodity/information'),
+        name: '商品信息',
+        meta: { title: '商品信息' }
       }
     ]
   },
