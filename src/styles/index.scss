@@ -82,12 +82,18 @@ div:focus {
 
 body .main-container .app-main {
   background-color: #f0f0f0;
-}
-/*表格的公共样式*/
-.el-table .el-table__header-wrapper{
-tr{
-  th{
-    background-color: #f6f6f6;
+  >div{
+    margin: 20px;
+    background-color: #fff;
+    padding: 20px;
   }
 }
+
+/*表格的公共样式*/
+.el-table .el-table__header-wrapper {
+  tr {
+    th {
+      background-color: #f6f6f6;
+    }
+  }
 }

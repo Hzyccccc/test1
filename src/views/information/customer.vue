@@ -1,14 +1,17 @@
 <template>
-  <div id="information">
+  <div id="customer">
     <div class="nav">
       <el-form :inline="true" :model="navFrom" class="demo-form-inline">
-        <el-form-item label="类型：">
+        <el-form-item label="名称：">
           <el-input v-model="navFrom.name"></el-input>
         </el-form-item>
-        <el-form-item label="品号：">
+        <el-form-item label="手机号码：">
           <el-input v-model="navFrom.name"></el-input>
         </el-form-item>
-        <el-form-item label="型号：">
+        <el-form-item label="联系电话：">
+          <el-input v-model="navFrom.name"></el-input>
+        </el-form-item>
+        <el-form-item label="备注：">
           <el-input v-model="navFrom.name"></el-input>
         </el-form-item>
         <el-form-item>
@@ -48,66 +51,66 @@
           </el-table-column>
           <el-table-column
             prop="name"
-            label="品名">
+            label="名称">
           </el-table-column>
           <el-table-column
             prop="address"
-            label="型号"
+            label="联系人"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="类型"
+            label="手机号码"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="扩展信息"
+            label="电子邮箱"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="单位"
+            label="联系电话"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="安全存量"
+            label="传真"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="库存"
+            label="预付款"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="零售价"
+            label="期初应收"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="最低售价"
+            label="期初应付"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="预计采购价"
+            label="期末应收"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="批发价"
+            label="期末应付"
+            show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+            prop="address"
+            label="税率(%)"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
             label="状态"
-            show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="序列号"
             show-overflow-tooltip>
           </el-table-column>
         </el-table>
@@ -125,37 +128,56 @@
       </el-pagination>
     </div>
     <el-dialog
-      title="提示"
+      title="增加客户信息"
       :visible.sync="addVisible"
       custom-class="addCont"
       center>
-      <div class="tab">
-        <el-radio-group v-model="activeIndex" size="small">
-          <el-radio-button label="1">基本信息</el-radio-button>
-          <el-radio-button label="2">价格信息</el-radio-button>
-          <el-radio-button label="3">扩展信息</el-radio-button>
-        </el-radio-group>
-      </div>
-      <div v-show="activeIndex==1" class="addBox">
-        <el-form label-position="right" label-width="120px" :model="addFrom">
-          <el-form-item label="品名：">
+      <div class="addBox">
+        <el-form :inline="true" label-position="right" label-width="120px" :model="addFrom">
+          <el-form-item label="名称：">
             <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
-          <el-form-item label="型号：">
+          <el-form-item label="联系人：">
             <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
-          <el-form-item label="类型：">
+          <el-form-item label="手机号码：">
             <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
-          <el-form-item label="序列号：">
-            <el-select v-model="serialNum" placeholder="请选择">
-              <el-option
-                v-for="item in serialList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id">
-              </el-option>
-            </el-select>
+          <el-form-item label="电子邮箱：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="联系电话：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="传真：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="期初应收：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="期初应付：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="累计应收：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="累计应付：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="纳税人识别号	：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="税率(%)：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="开户行：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="账号：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="地址：">
+            <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
           <el-form-item label="备注：">
             <el-input
@@ -169,38 +191,6 @@
           </el-form-item>
         </el-form>
       </div>
-      <div v-show="activeIndex==2"class="addBox">
-        <el-form label-position="right" label-width="120px" :model="addFrom">
-          <el-form-item label="安全存量：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="单位：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="零售价：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="预计采购价：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="批发价：">
-            <el-input v-model="addFrom.type"></el-input>
-          </el-form-item>
-        </el-form>
-      </div>
-      <div v-show="activeIndex==3" class="addBox">
-        <el-form label-position="right" label-width="80px" :model="addFrom">
-          <el-form-item label="规格：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="颜色：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="制造商：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-        </el-form>
-      </div>
       <div class="btn">
         <el-button @click="addVisible = false">取 消</el-button>
         <el-button type="primary" @click="addVisible = false">保存</el-button>
@@ -211,7 +201,7 @@
 
 <script>
   export default {
-    name: 'information',
+    name: 'customer',
     data() {
       return {
         /*添加弹出框信息*/
@@ -228,7 +218,7 @@
             name: '启用'
           }
         ],
-        serialNum:'',
+        serialNum: '',
 
         pageNum: 1,
         pageSize: 15,
@@ -237,34 +227,34 @@
         },
         tableData: [
           {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }]
+            date: '2016-05-03',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-02',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-04',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-01',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-08',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-06',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-07',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }]
       }
     },
     created() {
@@ -274,14 +264,19 @@
 </script>
 
 <style lang='scss' type='text/scss' scoped>
-  #information {
+  #customer {
     margin: 20px;
     background-color: #fff;
     padding: 20px;
+    .nav {
+      .el-input {
+        width: 100px;
+      }
+    }
     .operation {
       margin-bottom: 20px;
     }
-    .table{
+    .table {
       .oper {
         span {
           font-size: 16px;
@@ -304,14 +299,17 @@
   }
 </style>
 <style lang="scss" type="text/scss">
-  #information {
+  #customer {
     .addCont.el-dialog {
-      width: 600px;
-      .el-input__inner {
-        width: 400px;
+      width: 800px;
+      .el-form-item:nth-last-child(-n+2) {
+        width: 100%;
+        .el-input, .el-textarea {
+          width: 535px;
+        }
       }
-      .el-input__inner {
-        width: 400px;
+      .el-input {
+        width: 200px;
       }
     }
   }
