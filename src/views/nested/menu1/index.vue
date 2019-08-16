@@ -330,10 +330,11 @@ export default {
         });
       },
     //删除
-    deleteUser(ids) {
-      this.$http
-        .post("/user/deleteUser", {
-          ids
+    deleteUser(ids2) {
+      console.log('ids2');
+      console.log(ids2);
+      this.$http.post("/user/deleteUser", {
+          'ids':ids2
         })
         .then(res => {
           console.log(res);

@@ -16,6 +16,8 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
   config => {
+    console.log('config');
+    console.log(config);
     if (config.type) {
       if (config.type === 'encodeURIPost') {
         config.transformRequest = [function(data) {
@@ -47,7 +49,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
-
+    console.log(res);
     // if the custom code is not 20000, it is judged as an error.
     if (res.code !== 200) {
       Message({

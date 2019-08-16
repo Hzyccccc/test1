@@ -117,6 +117,30 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/purchaseAdmin',
+    component: Layout,
+    redirect: '/purchaseAdmin/purchaseOrder',
+    name: 'purchaseAdmin',
+    meta: {
+      title: '采购管理',
+      icon: 'user'
+    },
+    children: [
+      {
+        path: 'purchaseOrder',
+        component: () => import('@/views/purchaseAdmin/purchaseOrder/index'),
+        name: 'settings-menu1',
+        meta: { title: '采购订单', noCache: true }
+      },
+      {
+        path: 'purchaseOrder',
+        component: () => import('@/views/purchaseAdmin/purchaseOrder/index'),
+        name: 'settings-menu1',
+        meta: { title: '采购订单', noCache: true }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
