@@ -19,26 +19,16 @@
       </el-dialog> -->
 
       <el-form-item>
-<<<<<<< HEAD
         <el-button type="primary" @click="getInfo(userName)">查询</el-button>
         <el-button type="primary" @click="getInfo(userName='')">重置</el-button>
         <el-button type="primary">分配功能</el-button>
         <el-button type="primary">分配按钮</el-button>
         <el-button type="primary" @click="logFormVisible = true">新增</el-button>
         <el-button v-show="bFlag" type="primary" @click="deleteMoreUser">删除</el-button>
-=======
-        <el-button type="primary" @click="typeOfr">查询</el-button>
-        <el-button type="primary" @click="moveNull">查询</el-button>
-        <el-button type="primary" >重置</el-button>
-        <el-button type="primary">分配功能</el-button>
-        <el-button type="primary">分配按钮</el-button>
-        <el-button v-show="flag" type="primary">删除</el-button>
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       </el-form-item>
     </el-form>
 
     <el-dialog title="编辑角色信息" :visible.sync="dialogFormVisible">
-<<<<<<< HEAD
       <el-form :model="form" ref="form">
         <el-form-item label="角色名称" 
         :label-width="formLabelWidth"
@@ -66,31 +56,18 @@
             ]"
             >
           <el-input v-model="form.name" autocomplete="off" @blur ="testName(classId,form.name)"/>
-=======
-      <el-form :model="form">
-        <el-form-item label="登陆名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-<<<<<<< HEAD
         <el-button type="primary" :disabled=flag @click="logFormVisible = false, putUser(this.form.name)" >保存</el-button>
-=======
-        <el-button type="primary" @click="dialogFormVisible = false">保存</el-button>
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       </div>
     </el-dialog>
     <!-- 表单 -->
 
     <el-table
       ref="multipleTable"
-<<<<<<< HEAD
       :data="tableData"
-=======
-      :data="tableData3"
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       fixed
       tooltip-effect="dark"
       style="width: 100%"
@@ -100,31 +77,17 @@
         type="selection"
         width="55"
       />
-<<<<<<< HEAD
      
       <el-table-column
         prop="name"
         label="角色名称"
         width="700"
-=======
-      <el-table-column
-        label="品名"
-        width="120"
-      />
-      <el-table-column
-        prop="name"
-        label="型号"
-        width="120"
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       />
 
       <el-table-column
         prop="address"
         label="操作"
-<<<<<<< HEAD
         fixed="right"
-=======
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
         show-overflow-tooltip
       >
         <template slot-scope="scope">
@@ -167,31 +130,11 @@ export default {
   data() {
     return {
       userName:'',
-<<<<<<< HEAD
       lastName:'',
       classId:'',
       delId:'',
       delMore:[],
       tableData: [],
-=======
-      tableData3: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       search: '',
       logFormVisible:false,
       dialogTableVisible: false,
@@ -200,12 +143,8 @@ export default {
         name: '',
       },
       formLabelWidth: '120px',
-<<<<<<< HEAD
       flag: true,
       bFlag:false,
-=======
-      flag: false,
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       checkDom: '',
       idArray: [],
       // 第几页
@@ -219,7 +158,6 @@ export default {
     }
   },
   created() {
-<<<<<<< HEAD
     this.getInfo()
   },
   methods: {
@@ -257,11 +195,6 @@ export default {
         info:{'name':name}
       })
     },
-=======
-    this.getUserList()
-  },
-  methods: {
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
     // 修改
     handleEdit(index, row) {
       console.log(index, row)
@@ -281,11 +214,7 @@ export default {
     },
    // 请求用户数据
     getUserList() {
-<<<<<<< HEAD
       this.$http.get('/role/list',{
-=======
-      this.$http.get('/organization/getOrganizationTree',{
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
         id: 1
       }).then(res => {
         console.log(res)
@@ -296,33 +225,69 @@ export default {
     moveNull(){
       this.userName = ''
     },
-    // 查询
-    typeOfr(){
-
+    deleteUser(ids) {
+      this.$http.post("/role/batchDeleteRoleByIds", {
+          ids
+        })
+        .then(res => {
+          console.log(res);
+        });
     },
+    //多删
+    deleteMoreUser() {
+      
+  
+      this.multipleSelection.forEach(element => {
+        if (this.delMore.indexOf(element.id) < 0) {
+          this.delMore.push(element.id);
+     
+      
+        }
+      });
+      this.deleteUser(this.delMore);
+      this.delMore = [];
+    },
+    open2() {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.deleteUser(this.delId);
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+   
     handleSelectionChange(val) {
       this.multipleSelection = val
+      
+      
+      
     },
     //分页功能
-    getInfo() {
-        
-        this.$http.get('/user/getUserList',{
-          search: {"userName":"","loginName":""},
+    getInfo(name) {      
+        this.$http.get('/role/list',{
+          search: {"name":name || ''},
           currentPage: this.currentPage,
           pageSize: this.pageSize
         }).then(res =>{
           this.tableData = res.data.page.rows
           this.total = Math.ceil(res.data.page.total / this.pageSize)
-<<<<<<< HEAD
           console.log(res.data.page.rows);                   
-=======
-                   
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
         })
     },
       handleSelectionChange(val) {
       this.multipleSelection = val
-<<<<<<< HEAD
       console.log(this.multipleSelection);
       
       if (this.multipleSelection.length >= 2) {
@@ -332,17 +297,12 @@ export default {
       }
       
       
-=======
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
       
       },  
       handleSizeChange(val) {     
         this.pageSize = val
         console.log(this.pageSize);
-<<<<<<< HEAD
         console.log('======');
-=======
->>>>>>> 74efbb1e198afcfc3aca0e247773133d6f4c570a
         
         this.getInfo()
       },
