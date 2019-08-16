@@ -23,11 +23,12 @@ html {
 
 html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form,
 fieldset, input, textarea, p, blockquote, th, td, span {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    outline: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
 }
+
 #app {
   height: 100%;
 }
@@ -70,9 +71,23 @@ div:focus {
 .app-container {
   padding: 20px;
 }
-.w180{
-  width:180px
+
+.w180 {
+  width: 180px
 }
-.w195{
-  width:195px
+
+.w195 {
+  width: 195px
+}
+
+body .main-container .app-main {
+  background-color: #f0f0f0;
+}
+/*表格的公共样式*/
+.el-table .el-table__header-wrapper{
+tr{
+  th{
+    background-color: #f6f6f6;
+  }
+}
 }

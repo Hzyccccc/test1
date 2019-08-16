@@ -117,6 +117,31 @@ export const constantRoutes = [
       }
     ]
   },
+  /*商品类别*/
+  {
+    path: '/commodity',
+    component: Layout,
+    redirect: '/commodity/export-excel',
+    name: '商品管理',
+    meta: {
+      title: '商品管理',
+      icon: 'commodity'
+    },
+    children: [
+      {
+        path: 'category',
+        component: ()=>import('../views/commodity/category'),
+        name: '商品类别',
+        meta: { title: '商品类别' }
+      },
+      {
+        path: 'information',
+        component: ()=>import('../views/commodity/information'),
+        name: '商品信息',
+        meta: { title: '商品信息' }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
