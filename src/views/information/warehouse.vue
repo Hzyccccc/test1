@@ -1,14 +1,11 @@
 <template>
-  <div id="information">
+  <div id="warehouse">
     <div class="nav">
       <el-form :inline="true" :model="navFrom" class="demo-form-inline">
-        <el-form-item label="类型：">
+        <el-form-item label="仓库名称：">
           <el-input v-model="navFrom.name"></el-input>
         </el-form-item>
-        <el-form-item label="品号：">
-          <el-input v-model="navFrom.name"></el-input>
-        </el-form-item>
-        <el-form-item label="型号：">
+        <el-form-item label="描述：">
           <el-input v-model="navFrom.name"></el-input>
         </el-form-item>
         <el-form-item>
@@ -21,10 +18,7 @@
       <div class="operation">
         <el-button>增加</el-button>
         <el-button>删除</el-button>
-        <el-button>启用</el-button>
-        <el-button>禁用</el-button>
-        <el-button>导入</el-button>
-        <el-button>导出</el-button>
+        <el-button>设为默认</el-button>
       </div>
       <div class="table">
         <el-table
@@ -48,66 +42,41 @@
           </el-table-column>
           <el-table-column
             prop="name"
-            label="品名">
+            label="仓库名称">
           </el-table-column>
           <el-table-column
             prop="address"
-            label="型号"
+            label="仓库地址"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="类型"
+            label="仓储费"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="扩展信息"
+            label="搬运费"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="单位"
+            label="负责人"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="安全存量"
+            label="排序"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="库存"
+            label="是否默认"
             show-overflow-tooltip>
           </el-table-column>
           <el-table-column
             prop="address"
-            label="零售价"
-            show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="最低售价"
-            show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="预计采购价"
-            show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="批发价"
-            show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="状态"
-            show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="序列号"
+            label="描述"
             show-overflow-tooltip>
           </el-table-column>
         </el-table>
@@ -125,37 +94,29 @@
       </el-pagination>
     </div>
     <el-dialog
-      title="提示"
+      title="增加仓库信息"
       :visible.sync="addVisible"
       custom-class="addCont"
       center>
-      <div class="tab">
-        <el-radio-group v-model="activeIndex" size="small">
-          <el-radio-button label="1">基本信息</el-radio-button>
-          <el-radio-button label="2">价格信息</el-radio-button>
-          <el-radio-button label="3">扩展信息</el-radio-button>
-        </el-radio-group>
-      </div>
-      <div v-show="activeIndex==1" class="addBox">
+      <div class="addBox">
         <el-form label-position="right" label-width="120px" :model="addFrom">
-          <el-form-item label="品名：">
+          <el-form-item label="仓库名称：">
             <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
-          <el-form-item label="型号：">
+          <el-form-item label="仓库地址	：">
             <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
-          <el-form-item label="类型：">
+          <el-form-item label="仓储费：">
             <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
-          <el-form-item label="序列号：">
-            <el-select v-model="serialNum" placeholder="请选择">
-              <el-option
-                v-for="item in serialList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id">
-              </el-option>
-            </el-select>
+          <el-form-item label="搬运费：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="负责人：">
+            <el-input v-model="addFrom.name"></el-input>
+          </el-form-item>
+          <el-form-item label="排序：">
+            <el-input v-model="addFrom.name"></el-input>
           </el-form-item>
           <el-form-item label="备注：">
             <el-input
@@ -169,38 +130,6 @@
           </el-form-item>
         </el-form>
       </div>
-      <div v-show="activeIndex==2"class="addBox">
-        <el-form label-position="right" label-width="120px" :model="addFrom">
-          <el-form-item label="安全存量：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="单位：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="零售价：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="预计采购价：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="批发价：">
-            <el-input v-model="addFrom.type"></el-input>
-          </el-form-item>
-        </el-form>
-      </div>
-      <div v-show="activeIndex==3" class="addBox">
-        <el-form label-position="right" label-width="80px" :model="addFrom">
-          <el-form-item label="规格：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="颜色：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-          <el-form-item label="制造商：">
-            <el-input v-model="addFrom.name"></el-input>
-          </el-form-item>
-        </el-form>
-      </div>
       <div class="btn">
         <el-button @click="addVisible = false">取 消</el-button>
         <el-button type="primary" @click="addVisible = false">保存</el-button>
@@ -211,7 +140,7 @@
 
 <script>
   export default {
-    name: 'information',
+    name: 'warehouse',
     data() {
       return {
         /*添加弹出框信息*/
@@ -228,7 +157,7 @@
             name: '启用'
           }
         ],
-        serialNum:'',
+        serialNum: '',
 
         pageNum: 1,
         pageSize: 15,
@@ -237,34 +166,34 @@
         },
         tableData: [
           {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }]
+            date: '2016-05-03',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-02',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-04',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-01',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-08',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-06',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }, {
+            date: '2016-05-07',
+            name: '王小虎',
+            address: '上海市普陀区金沙江路 1518 弄'
+          }]
       }
     },
     created() {
@@ -274,14 +203,19 @@
 </script>
 
 <style lang='scss' type='text/scss' scoped>
-  #information {
+  #warehouse {
     margin: 20px;
     background-color: #fff;
     padding: 20px;
+    .nav {
+      .el-input {
+        width: 100px;
+      }
+    }
     .operation {
       margin-bottom: 20px;
     }
-    .table{
+    .table {
       .oper {
         span {
           font-size: 16px;
@@ -304,13 +238,16 @@
   }
 </style>
 <style lang="scss" type="text/scss">
-  #information {
+  #warehouse {
     .addCont.el-dialog {
       width: 600px;
-      .el-input__inner {
+      .el-form-item:nth-last-child(-n+2) {
+        width: 100%;
+      }
+      .el-input {
         width: 400px;
       }
-      .el-input__inner {
+      .el-textarea{
         width: 400px;
       }
     }
