@@ -135,8 +135,57 @@ export const constantRoutes = [
         meta: { title: '采购订单', noCache: true }
       },
       {
+        path: 'purchaseRK',
+        component: () => import('@/views/purchaseAdmin/purchaseRK'),
+        name: 'purchaseRK',
+        meta: { title: '采购入库', noCache: true }
+      },
+      {
+        path: 'purchaseBack',
+        component: () => import('@/views/purchaseAdmin/purchaseBack'),
+        name: 'purchaseBack',
+        meta: { title: '采购退货', noCache: true }
+      },
+      {
         path: 'addOrderInfo',
         component: () => import('@/views/purchaseAdmin/addOrderInfo'),
+        name: 'addOrderInfo',
+        meta: { title: '添加采购订单信息', noCache: true },
+        hidden: true
+      }
+    ]
+  },
+  {
+    path: '/saleAdmin',
+    component: Layout,
+    redirect: '/saleAdmin/saleOder',
+    name: 'saleAdmin',
+    meta: {
+      title: '销售管理',
+      icon: 'user'
+    },
+    children: [
+      {
+        path: 'saleOder',
+        component: () => import('@/views/saleAdmin/saleOder'),
+        name: 'saleOder',
+        meta: { title: '销售订单', noCache: true }
+      },
+      {
+        path: 'saleOderOut',
+        component: () => import('@/views/saleAdmin/saleOderOut'),
+        name: 'saleOderOut',
+        meta: { title: '销售出库', noCache: true }
+      },
+      {
+        path: 'saleOderBack',
+        component: () => import('@/views/saleAdmin/saleOderBack'),
+        name: 'saleOderBack',
+        meta: { title: '销售退货', noCache: true }
+      },
+      {
+        path: 'addOrderInfo',
+        component: () => import('@/views/saleAdmin/addOrderInfo'),
         name: 'addOrderInfo',
         meta: { title: '添加采购订单信息', noCache: true },
         hidden: true
