@@ -19,12 +19,12 @@
     </div>
     <div class="cont">
       <div class="operation">
-        <el-button type="primary">增加</el-button>
-        <el-button type="primary">删除</el-button>
-        <el-button type="primary">启用</el-button>
-        <el-button type="primary">禁用</el-button>
-        <el-button type="primary">导入</el-button>
-        <el-button type="primary">导出</el-button>
+        <el-button>增加</el-button>
+        <el-button>删除</el-button>
+        <el-button>启用</el-button>
+        <el-button>禁用</el-button>
+        <el-button>导入</el-button>
+        <el-button>导出</el-button>
       </div>
       <div class="table">
         <el-table
