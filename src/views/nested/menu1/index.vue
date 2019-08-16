@@ -3,29 +3,43 @@
     <!-- 头部 -->
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item label="登陆名称">
-        <el-input placeholder="审批人" v-model="namer.login" />
+        <el-input v-model="searchName" />
       </el-form-item>
       <el-form-item label="用户名称">
-        <el-input placeholder="审批人" v-model="namer.user" />
+        <el-input v-model="searchUser" />
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" @click="fetchData">查询</el-button>
+        <el-button type="primary" @click="getInfo(searchUser,searchName)">查询</el-button>
         <el-button type="primary" @click="moveNull">重置</el-button>
         <el-button type="primary">分配角色</el-button>
         <el-button type="primary">分配仓库</el-button>
-        <el-button type="primary" @click="dialogFormVisible = true, addAdmin()">新增用户</el-button>
+        <el-button type="primary" @click="dialogFormVisible = true">新增用户</el-button>
         <el-button type="primary" @click="deleteMoreUser" v-show="flager">删除</el-button>
       </el-form-item>
     </el-form>
     <!-- 新增用户 -->
     <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
-      <el-form :model="form">
-        <el-form-item label="登陆名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+      <el-form :model="form" ref="form">
+        <el-form-item 
+          label="登陆名称" 
+          prop="loginame"
+          :label-width="formLabelWidth" 
+          :rules="[
+              { required: true, message: '登陆名称不能为空'},             
+              { max: 60, message: '长度不能大于60'}
+            ]"
+        >
+          <el-input v-model="form.loginame" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="所属公司" :label-width="formLabelWidth" equired>
-          <el-select v-model="value" placeholder="请选择">
+        <el-form-item label="所属公司" :label-width="formLabelWidth" 
+        prop="companyName"
+          :rules="[
+              { required: true, message: '请选择所属公司'},             
+            ]"
+        
+        >
+          <el-select v-model="form.companyNam" placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -35,25 +49,60 @@
             <span style="float: left">{{ }}</span>
           </el-select>
         </el-form-item>
-        <el-form-item label="用户名称" :label-width="formLabelWidth" required>
-          <el-input v-model="form.loginame" autocomplete="off" />
-        </el-form-item>
         <el-form-item label="部门" :label-width="formLabelWidth">
           <el-input v-model="form.orgAbr" autocomplete="off" />
         </el-form-item>
+        <el-form-item 
+          label="用户名称" 
+          prop="username"
+          :label-width="formLabelWidth" 
+          :rules="[
+              { required: true, message: '用户名称不能为空'},             
+              { max: 60, message: '长度不能大于60'}
+            ]"
+        >
+          <el-input v-model="form.username" autocomplete="off" />
+        </el-form-item>
+        
         <el-form-item label="用户排序" :label-width="formLabelWidth">
           <el-input v-model="form.userBlngOrgaDsplSeq" autocomplete="off" />
         </el-form-item>
         <el-form-item label="职位" :label-width="formLabelWidth">
           <el-input v-model="form.position" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="联系电话" :label-width="formLabelWidth" required>
-          <el-input v-model="form.phonenum" autocomplete="off" type="tel" />
+        <el-form-item label="手机号码" 
+        prop="phonenum"
+        :label-width="formLabelWidth"
+        :rules="[ 
+        {required: true, message:'手机号码不能为空'},
+        {max: 11, message:'手机号码有误，请重新输入'},
+        {pattern:'^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$'}
+        ]"
+        >
+          <el-input v-model.number="form.phonenum" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="电子邮箱" :label-width="formLabelWidth">
-          <el-input v-model="form.email" autocomplete="off" type="email" />
+        
+        
+        <el-form-item 
+          label="电子邮箱" 
+          prop="email"
+          :label-width="formLabelWidth" 
+          :rules="[
+              { required: true, message: '电子邮箱不能为空'},
+              { type: 'number', message: '电子邮箱格式错误'}
+            ]"
+        >
+          <el-input v-model="form.email" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="描述" :label-width="formLabelWidth">
+
+        <el-form-item label="描述" :label-width="formLabelWidth"
+          prop="description"
+          :rules="[
+          {
+            max: 200, message: '输入过长，只允许输入200个字符'
+          }]"
+        
+        >
           <el-input
             type="textarea"
             v-model="form.description"
@@ -65,54 +114,108 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false, this.addAdmin()">确 定</el-button>
+        <el-button type="primary" @click="dialogFormVisible = true, submitForm('form')">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 修改 -->
-    <!-- <el-dialog title="修改信息" :visible.sync="dialogFormVisible">
-      <el-form :model="form">
-        <el-form-item label="登陆名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+        <el-dialog title="修改用户" :visible.sync="reviseFromdata">
+      <el-form :model="form" ref="form">
+        <el-form-item 
+          label="登陆名称" 
+          prop="loginame"
+          :label-width="formLabelWidth" 
+          :rules="[
+              { required: true, message: '登陆名称不能为空'},             
+              { max: 60, message: '长度不能大于60'}
+            ]"
+        >
+          <el-input v-model="form.loginame" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="所属公司" :label-width="formLabelWidth">
-          <el-select v-model="form.region" placeholder="请选择公司">
-            <el-option label="区域一" value="shanghai" />
-            <el-option label="区域二" value="beijing" />
+        <el-form-item label="所属公司" :label-width="formLabelWidth" 
+        prop="companyName"
+          :rules="[
+              { required: true, message: '请选择所属公司'},             
+            ]"
+        
+        >
+          <el-select v-model="form.companyNam" placeholder="请选择">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+            <span style="float: left">{{ }}</span>
           </el-select>
         </el-form-item>
         <el-form-item label="部门" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+          <el-input v-model="form.orgAbr" autocomplete="off" />
         </el-form-item>
+        <el-form-item 
+          label="用户名称" 
+          prop="username"
+          :label-width="formLabelWidth" 
+          :rules="[
+              { required: true, message: '用户名称不能为空'},             
+              { max: 60, message: '长度不能大于60'}
+            ]"
+        >
+          <el-input v-model="form.username" autocomplete="off" />
+        </el-form-item>
+        
         <el-form-item label="用户排序" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户名称" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+          <el-input v-model="form.userBlngOrgaDsplSeq" autocomplete="off" />
         </el-form-item>
         <el-form-item label="职位" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+          <el-input v-model="form.position" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="联系电话" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+        <el-form-item label="手机号码" 
+        prop="phonenum"
+        :label-width="formLabelWidth"
+        :rules="[ 
+        {required: true, message:'手机号码不能为空'},
+        {max: 11, message:'手机号码有误，请重新输入'},
+        {pattern:'^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$'}
+        ]"
+        >
+          <el-input v-model.number="form.phonenum" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="电子邮箱" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off" />
+        
+        
+        <el-form-item 
+          label="电子邮箱" 
+          prop="email"
+          :label-width="formLabelWidth" 
+          :rules="[
+              { required: true, message: '电子邮箱不能为空'},
+              { type: 'number', message: '电子邮箱格式错误'}
+            ]"
+        >
+          <el-input v-model="form.email" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="描述" :label-width="formLabelWidth">
+
+        <el-form-item label="描述" :label-width="formLabelWidth"
+          prop="description"
+          :rules="[
+          {
+            max: 200, message: '输入过长，只允许输入200个字符'
+          }]"
+        
+        >
           <el-input
             type="textarea"
+            v-model="form.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             placeholder="暂无备注信息"
             autocomplete="off"
           />
-
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
       </div>
-    </el-dialog>-->
+    </el-dialog>
     <!-- 表单 -->
 
     <el-table
@@ -137,11 +240,10 @@
 
       <el-table-column prop="address" label="操作" show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">
-            <span @click="dialogFormVisible = true">修改</span>
+          <el-button size="mini" @click="handleEdit(scope.$index, scope.row),reviseFromdata = reviseData">
+            修改
           </el-button>
           <el-button
-            id="id"
             size="mini"
             type="danger"
             @click="handleDelete(scope.$index, scope.row),open2()"
@@ -169,10 +271,9 @@ export default {
   data() {
     return {
       flager: false,
-      namer: {
-        login: "",
-        user: ""
-      },
+      searchName: '',
+      searchUser: '',
+      id:'',
       //删除id
       delId: [],
       //多选删除
@@ -182,21 +283,26 @@ export default {
       value: null,
       tableData: [],
       search: "",
+      reviseData:false,
+      reviseFromdata:false,
       dialogTableVisible: false,
       dialogFormVisible: false,
       form: {
-        loginame: "qweq",
+        loginame: "",
         orgAbr: "",
         orgaId: "",
         selectType: "",
         orgaUserRelId: "",
         id: "",
+        companyNam:"",
         userBlngOrgaDsplSeq: "",
-        username: "qweqeq",
+        username: "",
         position: "",
         phonenum: "",
         email: "",
-        description: ""
+        description: "",
+        isystem: '',
+        tenantId:''
       },
       formLabelWidth: "120px",
       // 第几页
@@ -210,10 +316,19 @@ export default {
   },
   created() {
     this.getInfo();
-    // this.getTo()
-    //
   },
   methods: {
+    //修改
+    submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            alert('submit!');
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+      },
     //删除
     deleteUser(ids) {
       this.$http
@@ -256,23 +371,38 @@ export default {
           });
         });
     },
+    //修改
     handleEdit(index, row) {
-      console.log(index, row);
+          this.form.companyName = row.companyName
+          this.form.description = row.description
+          this.form.email = row.email
+          this.form.id = row.id
+          this.form.isystem = row.isystem
+          this.form.loginame = row.loginame
+          this.form.orgAbr = row.orgAbr
+          this.form.orgaId = row.orgaId
+          this.form.orgaUserRelId = row.orgaUserRelId
+          this.form.phonenum = row.phonenum
+          this.form.position = row.position
+          this.form.tenantId = row.tenantId
+          this.form.userBlngOrgaDsplSeq = row.userBlngOrgaDsplSeq
+          this.form.username = row.username
+          // console.log(this.form);
+          this.reviseData = true
+          this.id = row.id;
+      
     },
     handleDelete(index, row) {
-      console.log(row.id);
+      // console.log(row.id);
       this.delId = row.id;
     },
-    fetchData() {
-      getUserList().then(response => {
-        console.log(response);
-      });
-    },
+    
     //分页功能
-    getInfo() {
+    getInfo(userName,loginName) {   
+      
       this.$http
         .get("/user/getUserList", {
-          search: { userName: "", loginName: "" },
+          search: { userName, loginName },
           currentPage: this.currentPage,
           pageSize: this.pageSize
         })
@@ -284,11 +414,13 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val;
       this.displayDel();
-      // this.getInfo()
+      console.log(111);
+      
+     
     },
     handleSizeChange(val) {
       this.pageSize = val;
-      // console.log(this.pageSize);
+      
 
       this.getInfo();
     },
@@ -307,18 +439,60 @@ export default {
     },
     //清空搜索框内容
     moveNull() {
-      (this.namer.login = ""), (this.namer.user = "");
+      this.searchName = ""
+      this.searchUser = ""
+      this.getInfo()
     },
     //显示多选删除按钮
     displayDel() {
-      console.log(this.multipleSelection.length);
+      // console.log(this.multipleSelection.length);
 
       if (this.multipleSelection.length >= 2) {
         this.flager = true;
       } else {
         this.flager = false;
       }
-    }
+    },
+   //新增点击提交
+   submitForm(formName) {  
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            alert('成功!');
+            this.dialogFormVisible = false;
+            this.addAdmin()
+            
+          } else {
+            alert('提交失败，格式错误!!');
+            return false;
+          }
+        });
+      }, 
+      //修改点击提交
+      reviseForm(formName) {  
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            alert('成功!');
+            this.dialogFormVisible = false;
+            this.reviseUser(this.id,this,form)       
+          } else {
+            alert('提交失败，格式错误!!');
+            return false;
+          }
+        });
+      },
+      //点击修改
+      reviseUser(id,info){
+        this.$http.post(`user/updateUser/?id=${id}`,{
+          
+          info
+        }).then(res=>{
+          for(let key in info){
+              info[key]  = ''
+          }
+          this.getInfo()
+          
+        })
+      }
   }
 };
 </script>
