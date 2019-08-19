@@ -69,6 +69,7 @@
       ref="multipleTable"
       :data="tableData"
       fixed
+      height="500"
       tooltip-effect="dark"
       style="width: 100%"
       @selection-change="handleSelectionChange"
@@ -244,6 +245,7 @@ export default {
       
         }
       });
+      console.log(this.delMore)
       this.deleteUser(this.delMore);
       this.delMore = [];
     },
@@ -269,10 +271,7 @@ export default {
     },
    
     handleSelectionChange(val) {
-      this.multipleSelection = val
-      
-      
-      
+      this.multipleSelection = val      
     },
     //分页功能
     getInfo(name) {      
@@ -288,7 +287,7 @@ export default {
     },
       handleSelectionChange(val) {
       this.multipleSelection = val
-      console.log(this.multipleSelection);
+      // console.log(this.multipleSelection);
       
       if (this.multipleSelection.length >= 2) {
         this.bFlag = true;
