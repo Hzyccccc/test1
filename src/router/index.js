@@ -233,7 +233,7 @@ export const constantRoutes = [
   {
     path: '/finance',
     component: Layout,
-    redirect: '/commodity/export-excel',
+    redirect: '/finance/income',
     name: '财务管理',
     meta: {
       title: '财务管理',
@@ -241,21 +241,39 @@ export const constantRoutes = [
     },
     children: [
       {
-        path: 'category',
-        component: () => import('../views/commodity/category'),
-        name: '商品类别',
-        meta: { title: '商品类别' }
+        path: 'income',
+        component: () => import('../views/finance/income'),
+        name: '收入单',
+        meta: { title: '收入单' }
       },
       {
-        path: 'information',
-        component: () => import('../views/commodity/information'),
-        name: '商品信息',
-        meta: { title: '商品信息' }
+        path: 'addincome',
+        hidden: true,
+        component: () => import('../views/finance/addincome'),
+        name: '新增收入单',
+        meta: { title: '新增收入单' }
+      },
+      {
+        path: 'expenditure',
+        component: () => import('../views/finance/expenditure'),
+        name: '支出单',
+        meta: { title: '支出单' }
+      },
+      {
+        path: 'addexpenditure',
+        hidden: true,
+        component: () => import('../views/finance/addexpenditure'),
+        name: '新增支出单',
+        meta: { title: '新增支出单' }
       }
     ]
   },
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+// 404 page must be placed at the end !!!
+  {
+    path: '*', redirect:
+      '/404', hidden:
+      true
+  }
 ]
 const router = createRouter()
 
