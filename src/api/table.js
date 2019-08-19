@@ -17,6 +17,10 @@ export default {
   })
 },
   post(url,params){
+    console.log('post');
+    
+    console.log(params);
+    
     return request({
       url,
       method: 'post',

@@ -26,7 +26,7 @@
           prop="loginame"
           :label-width="formLabelWidth"
           :rules="[
-              { required: true, message: '登陆名称不能为空'},             
+              { required: true, message: '登陆名称不能为空',trigger: 'blur'},             
               { max: 60, message: '长度不能大于60'}
             ]"
         >
@@ -40,7 +40,7 @@
               { required: true, message: '请选择所属公司'},             
             ]"
         >
-          <el-select v-model="form.companyNam" placeholder="请选择">
+          <el-select v-model="form.companyName" placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -77,8 +77,7 @@
           :label-width="formLabelWidth"
           :rules="[ 
         {required: true, message:'手机号码不能为空'},
-        {max: 11, message:'手机号码有误，请重新输入'},
-        {pattern:'^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$'}
+        {pattern:/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/, message:'手机号码有误，请重新输入',trigger: 'blur'}
         ]"
         >
           <el-input v-model.number="form.phonenum" autocomplete="off" />
@@ -89,8 +88,8 @@
           prop="email"
           :label-width="formLabelWidth"
           :rules="[
-              { required: true, message: '电子邮箱不能为空'},
-              { type: 'number', message: '电子邮箱格式错误'}
+              { required: true, message: '电子邮箱不能为空',trigger: 'blur'},
+              { type: 'email', message: '电子邮箱格式错误'}
             ]"
         >
           <el-input v-model="form.email" autocomplete="off" />
@@ -141,7 +140,7 @@
               { required: true, message: '请选择所属公司'},             
             ]"
         >
-          <el-select v-model="form.companyNam" placeholder="请选择">
+          <el-select v-model="form.companyName" placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -178,8 +177,8 @@
           :label-width="formLabelWidth"
           :rules="[ 
         {required: true, message:'手机号码不能为空'},
-        {max: 11, message:'手机号码有误，请重新输入'},
-        {pattern:'^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$'}
+        
+        {pattern:/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/,message:'手机号码有误，请重新输入'}
         ]"
         >
           <el-input v-model.number="form.phonenum" autocomplete="off" />
@@ -191,7 +190,7 @@
           :label-width="formLabelWidth"
           :rules="[
               { required: true, message: '电子邮箱不能为空'},
-              { type: 'number', message: '电子邮箱格式错误'}
+              { type: 'email', message: '电子邮箱格式错误'}
             ]"
         >
           <el-input v-model="form.email" autocomplete="off" />
@@ -216,8 +215,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="reviseFromdata = false">取 消</el-button>
-        <el-button type="primary" @click="reviseFromdata = false ,submitForm('form')">确 定</el-button>
+        <el-button @click="reviseFromdata = false, cancel()" >取 消</el-button>
+        <el-button type="primary" @click="reviseFromdata = false ,reviseForm('form')">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 表单 -->
@@ -236,7 +235,7 @@
       <el-table-column prop="username" label="用户名称" width="120" />
       <el-table-column prop="position" label="职位" width="120" />
       <el-table-column prop="orgAbr" label="部门" width="120" />
-      <el-table-column prop="orgAbr" label="所属公司" width="120" />
+      <el-table-column prop="companyName" label="所属公司" width="120" />
       <el-table-column prop="email" label="电子邮箱" width="120" />
       <el-table-column prop="phonenum" label="电话号码" width="120" />
       <el-table-column prop="userBlngOrgaDsplSeq" label="用户排序" width="120" />
@@ -285,7 +284,13 @@ export default {
       //多选删除
       delMore: [],
       // 公司列表
-      options: [],
+      options: [{
+          value: 'Beijing',
+          label: '北京'
+        }, {
+          value: 'Shanghai',
+          label: '上海'
+        }],
       value: null,
       tableData: [],
       search: "",
@@ -300,7 +305,7 @@ export default {
         selectType: "",
         orgaUserRelId: "",
         id: "",
-        companyNam: "",
+        companyName: "",
         userBlngOrgaDsplSeq: "",
         username: "",
         position: "",
@@ -308,7 +313,37 @@ export default {
         email: "",
         description: "",
         isystem: "",
-        tenantId: ""
+        tenantId: "",
+        
+        //  rules: {
+        //   loginame: [
+        //     { required: true, message: '登陆名称不能为空', trigger: 'blur' },
+        //     { max: 60, message: '长度不能大于60', trigger: 'blur' }
+        //   ],
+        //   companyName: [      
+        //     { required: true, message: '请选择所属公司', trigger: 'change' }
+        //   ],
+        //   username: [
+            
+        //       { max: 60, message: '长度不能大于60',trigger: 'blur' },
+        //     {required: true, message: '用户名称不能为空', trigger: 'blur' }
+        //   ],
+        //   phonenum: [
+           
+        //     {max: 11, message:'手机号码有误，请重新输入',trigger: 'blur'},
+        //     {pattern:'^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$',message: '手机号码格式错误', trigger: 'blur' },
+        //     {required: true, message: '手机号码不能为空', trigger: 'blur' }
+        //   ],
+        //   email: [
+            
+        //     { required: true, message: '电子邮箱不能为空', trigger: 'blur' },
+        //     { type: 'email', message: '电子邮箱格式错误', trigger: 'blur' }
+        //   ],
+        //   description: [
+        //     { max: 200, message: '输入过长，只允许输入200个字符', trigger: 'blur' }
+        //   ],
+          
+        // }
       },
       formLabelWidth: "120px",
       // 第几页
@@ -324,28 +359,21 @@ export default {
     this.getInfo();
   },
   methods: {
-    //修改
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
-        if (valid) {
-          alert("submit!");
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
+    cancel(){
+      for(let i in this.form){
+            this.form[i] = ''
+          }
     },
     //删除
     deleteUser(ids) {
-      // ids.pop()
       console.log(ids);
 
       this.$http
         .post("/user/deleteUser", {
-          ids: [ids]
+          ids
         })
         .then(res => {
-          console.log(res);
+          this.getInfo()
         });
     },
     //多删
@@ -357,10 +385,33 @@ export default {
           this.delMore.push(element.id);
         }
       });
-      // console.log(this.delMore);
-
-      this.deleteUser(this.delMore);
-      // this.delMore = [];
+      this.$http
+        .post(`/user/deleteUser`, {
+          ids:[this.delMore]
+        })
+        .then(res => {
+          console.log(res);
+        });  
+    },
+    open1() {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.deleteUser(this.delId);
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
     },
     open2() {
       this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
@@ -384,6 +435,7 @@ export default {
     },
     //修改
     handleEdit(index, row) {
+      
       this.form.companyName = row.companyName;
       this.form.description = row.description;
       this.form.email = row.email;
@@ -417,7 +469,10 @@ export default {
         })
         .then(res => {
           this.tableData = res.data.page.rows;
+          
+          
           this.total = Math.ceil(res.data.page.total / this.pageSize);
+          // console.log(this.tableData);
         });
     },
     handleSelectionChange(val) {
@@ -432,15 +487,19 @@ export default {
     },
     handleCurrentChange(val) {
       this.currentPage = val;
+      console.log('zhe');
+      this.getInfo()
+      console.log(this.currentPage);
+      
     },
     //添加功能
     addAdmin() {
       this.$http
         .post("/user/addUser", {
-          info: this.from
+          info: this.form
         })
         .then(res => {
-          console.log(res.data);
+          this.getInfo()
         });
     },
     //清空搜索框内容
@@ -466,10 +525,12 @@ export default {
           alert("成功!");
           this.dialogFormVisible = false;
           this.addAdmin();
+          
         } else {
           alert("提交失败，格式错误!!");
           return false;
         }
+
       });
     },
     //修改点击提交
@@ -478,7 +539,8 @@ export default {
         if (valid) {
           alert("成功!");
           this.dialogFormVisible = false;
-          this.reviseUser(this.id, this, form);
+          this.reviseUser(this.id, this.form);
+          
         } else {
           alert("提交失败，格式错误!!");
           return false;

@@ -5,19 +5,6 @@
       <el-form-item label="角色名称">
         <el-input placeholder="" v-model="userName"/>
       </el-form-item>
-
-      <!-- <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
-        <el-form :model="form">
-          <el-form-item label="登陆名称" :label-width="formLabelWidth">
-            <el-input v-model="form.name" autocomplete="off"></el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-        </div>
-      </el-dialog> -->
-
       <el-form-item>
         <el-button type="primary" @click="getInfo(userName)">查询</el-button>
         <el-button type="primary" @click="getInfo(userName='')">重置</el-button>
@@ -27,7 +14,7 @@
         <el-button v-show="bFlag" type="primary" @click="deleteMoreUser">删除</el-button>
       </el-form-item>
     </el-form>
-
+  <!--  修改角色-->
     <el-dialog title="编辑角色信息" :visible.sync="dialogFormVisible">
       <el-form :model="form" ref="form">
         <el-form-item label="角色名称" 
@@ -41,11 +28,11 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" :disabled=flag @click="dialogFormVisible = false, putName(this.classId,this.form.name)" >保存</el-button>
+        <el-button @click="dialogFormVisible = false, form.name = ''">取消</el-button>
+        <el-button type="primary" :disabled=flag @click="dialogFormVisible = false, putName(classId,form.name)" >保存</el-button>
       </div>
     </el-dialog>
-
+  <!-- 新增角色 -->
     <el-dialog title="新增角色信息" :visible.sync="logFormVisible">
       <el-form :model="form" ref="form">
         <el-form-item label="角色名称" 
@@ -55,12 +42,12 @@
               { required: true, message: '角色名称不能为空'}
             ]"
             >
-          <el-input v-model="form.name" autocomplete="off" @blur ="testName(classId,form.name)"/>
+          <el-input v-model="form.name" autocomplete="off" @blur ="testName(0,form.name)"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" :disabled=flag @click="logFormVisible = false, putUser(this.form.name)" >保存</el-button>
+        <el-button @click="logFormVisible = false">取消</el-button>
+        <el-button type="primary" :disabled=flag @click="logFormVisible = false, putUser(form.name)" >保存</el-button>
       </div>
     </el-dialog>
     <!-- 表单 -->
@@ -84,11 +71,12 @@
         label="角色名称"
         width="700"
       />
+     
 
       <el-table-column
         prop="address"
         label="操作"
-        fixed="right"
+        width="700"
         show-overflow-tooltip
       >
         <template slot-scope="scope">
@@ -114,7 +102,7 @@
     <el-pagination
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
-      :current-page.sync="currentPage2"
+      :current-page.sync="currentPage"
       :page-sizes="[10, 20, 50, 100]"
       :page-size="10"
       layout="sizes, prev, pager, next"
@@ -152,7 +140,7 @@ export default {
       currentPage: 1,
       //默认每页显示页码
       pageSize:10,
-      currentPage2:1,
+      // currentPage2:1,
       //总页码数
       total : null
 
@@ -163,21 +151,19 @@ export default {
   },
   methods: {
     //验证用户名否改边
-    editName() {
-      if(this.form.name  === this.lastName) return
-      if(this.form.name == '') return 
-      this.testName(this.classId,this.form.name)
-    },
+ 
+
+
     //验证用户名
     testName(id,name){
       this.$http.get('/role/checkIsNameExist',{
         id,
         name,
       }).then(res=>{
-        if(res.data.status === false) {
+        if(res.data.status === true) {
           alert('用户名已存在，请重新输入')
         }else {
-          this.flag = true;
+          this.flag = false;
           
         }
         
@@ -185,15 +171,23 @@ export default {
     },
     //修改用户
     putName(id,name){
-      this.$http.post('/role/update',{
-        info:{"id":id,name:"name"}
+      
+      
+      this.$http.post(`/role/update?id=${id}`,{
+        info:{"id":id,name:name}
 
+      }).then(res=>{
+        this.form.name = ''
+        this.getInfo()
       })
     },
     // 新增用户
     putUser(name) {
       this.$http.post('/role/add',{
         info:{'name':name}
+      }).then(res=>{
+        this,form.name = ''
+        this.getInfo()
       })
     },
     // 修改
@@ -227,12 +221,21 @@ export default {
       this.userName = ''
     },
     deleteUser(ids) {
+      console.log('=======');
+      
+      console.log(ids);
+      
       this.$http.post("/role/batchDeleteRoleByIds", {
-          ids
+          ids:ids
+          
         })
         .then(res => {
-          console.log(res);
-        });
+          console.log('111==');
+          
+          console.log(ids);
+          
+          this.getInfo()
+       });
     },
     //多删
     deleteMoreUser() {
@@ -307,6 +310,8 @@ export default {
       },
       handleCurrentChange(val) {     
         this.currentPage = val;
+        
+        
         this.getInfo()
       },
   }
