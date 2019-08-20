@@ -2,25 +2,25 @@
     <div class="purchaseOrder" id="purchaseOrder">
          <div class="serach-wrap">
                <el-form class="titForm" ref="form" v-model="searchForm" label-width="100px" size="medium">
-                <el-form-item label="单据编号：" :title="searchForm.contactName">
-                    <el-input v-model="searchForm.contactName" placeholder="单据编号"></el-input>
+                <el-form-item label="单据编号：" :title="searchForm.number">
+                    <el-input v-model="searchForm.number" placeholder="单据编号"></el-input>
                 </el-form-item>
-               <el-form-item label="商品信息：" :title="searchForm.contactName">
-                    <el-input v-model="searchForm.contactName" placeholder="商品信息"></el-input>
+               <el-form-item label="商品信息：" :title="searchForm.materialParam">
+                    <el-input v-model="searchForm.materialParam" placeholder="商品信息"></el-input>
                 </el-form-item>
-               <el-form-item label="单据日期：" :title="searchForm.contactName">
+               <el-form-item label="单据日期：" >
                     <el-date-picker
-                        v-model="searchForm.startPeriod"
+                        v-model="searchForm.beginTime"
                         class="selectDate"
-                        type="month"
+                        type="date"
                         @change="cahngeData(1)"
                         placeholder="选择月">
                     </el-date-picker>
                     <span class="kong">-</span>
                     <el-date-picker
-                        v-model="searchForm.endPeriod"
+                        v-model="searchForm.endTime"
                         class="selectDate"
-                        type="month"
+                        type="date"
                         @change="cahngeData(2)"
                         placeholder="选择月">
                     </el-date-picker>
@@ -52,35 +52,46 @@
                   prop="date"
                   label="操作"
                   >
+                  <template slot-scope="scope">
+                      <el-button type="text">查看</el-button>
+                      <el-button type="text">编辑</el-button>
+                      <el-button type="text">删除</el-button>
+                      <el-button type="text">转采购入库</el-button>
+                   </template>
                 </el-table-column>
                 <el-table-column
-                  prop="name"
+                  prop="organName"
                   label="供应商名称"
                  >
                 </el-table-column>
                 <el-table-column
-                  prop="address"
+                  prop="defaultnumber"
                   label="单据编号">
                 </el-table-column>
                 <el-table-column
-                  prop="address"
+                  prop="materialsList"
                   label="商品信息">
                 </el-table-column>
                 <el-table-column
-                  prop="address"
+                  prop="opertimeStr"
                   label="单据日期">
                 </el-table-column>
                 <el-table-column
-                  prop="address"
+                  prop="operpersonname"
                   label="操作员">
                 </el-table-column>
                  <el-table-column
-                  prop="address"
+                  prop="totalprice"
                   label="金额合计">
                 </el-table-column>
                  <el-table-column
-                  prop="address"
+                  prop="status"
                   label="状态">
+                   <template slot-scope="scope">
+                      <span v-if="scope.row.status == 0">未审核</span>
+                      <span v-if="scope.row.status == 1">已审核</span>
+                      <span v-if="scope.row.status == 2">已转采购</span>
+                   </template>
                 </el-table-column>
               </el-table>
             </div>
@@ -99,14 +110,16 @@
 </template>
 
 <script>
+import {mapState} from 'vuex'
 export default {
   name: 'AppMain',
   data() {
       return {
           searchForm:{
-              startPeriod:'',
-              endPeriod:'',
-              contactName:'',
+              beginTime:'',
+              endTime:'',
+              number:'',
+              materialParam:'',
           },
           value:'',
           tableData:[],
@@ -114,17 +127,105 @@ export default {
           pageNum: 1,
           pageSize: 10,
           total: 0,
+
+          userBusinessValue:''
       }
   },
+  computed: {
+    ...mapState(['user'])
+  },
+  created() {
+    console.log('user',this.user)
+     /*查询用户仓库*/
+    this.seeUserWarehouse().then(() => {
+      this.seeOderList();
+    });
+  },
   methods: {
+     /*查询用户仓库*/
+      async seeUserWarehouse() {
+        let data = {
+          KeyId:this.user.userInfo.id,
+          Type: 'UserDepot'
+        }
+        await this.$http.get('/userBusiness/getBasicData',data).then(res=>{
+            console.log('查询用户仓库');
+            console.log(res);
+            if(res.code == 200) {
+              let userBusinessList = res.data.userBusinessList[0].value.replace(/\[|]/g,',');
+               userBusinessList = userBusinessList.split(',')
+              let list =  userBusinessList.filter((item,index) => {
+                    return item && item.trim();
+              })
+              this.userBusinessValue = list.join(',');
+            } 
+        })
+      },
+      /*采购订单列表 */ 
+      async seeOderList() {
+        let timeS,timeE;
+
+        if (this.searchForm.beginTime && this.searchForm.endTime) {
+          timeS = this.$method.getSTime1(this.searchForm.beginTime);
+          timeE = this.$method.getSTime1(this.searchForm.endTime);
+          timeS = timeS + ' '+ '00:00:00';
+          timeE = timeE + ' '+ '23:59:59';
+        } else {
+          timeS = '';
+          timeE = '';
+        }
+         let data = {
+          "search": {
+            "depotIds":this.userBusinessValue,
+            "type": "",
+            "subType": "",
+            "state": "",
+            "number": this.searchForm.number,
+            "beginTime": timeS,
+            "endTime": timeE,
+            "materialParam": this.searchForm.materialParam,
+          },
+          "currentPage":this.pageNum,
+          "pageSize":this.pageSize,
+        }
+        
+        // 商品信息
+        if(this.searchForm.materialParam) {
+          const reg = /^([\u4e00-\u9fa5]{1,},){0,}([\u4e00-\u9fa5]{1,})$/; 
+          if (!reg.test(this.searchForm.materialParam)) {
+            this.$message.error('请用英文逗号分离');
+            return;
+          } 
+        }   
+        console.log('data');
+        console.log(data);
+        
+        // data.search
+        await this.$http.get('/depotHead/list',data).then(res=>{
+            console.log('采购订单列表');
+            console.log(res);
+            if(res.code == 200) {
+              this.tableData = res.data.page.rows;
+              this.total = res.data.page.total;
+            } 
+        })
+      },
       add() {
         this.$router.push({path:'addOrderInfo'});
       },
       reset() {
-        
+        this.pageNum = 1;
+        this.pageSize = 10;
+        this.searchForm = {
+              beginTime:'',
+              endTime:'',
+              number:'',
+              materialParam:'',
+        };
+        this.seeOderList();
       },
       handleSearch() {
-
+        this.seeOderList();
       },
       /*多选*/
       handleSelectionChange(val) {
@@ -132,17 +233,17 @@ export default {
       },
       /*日期 */
       cahngeData(type) {
-        if (this.searchForm.startPeriod && this.searchForm.endPeriod) {
-          let start = new Date(this.searchForm.startPeriod).getTime()
-          let end = new Date(this.searchForm.endPeriod).getTime()
+        if (this.searchForm.beginTime && this.searchForm.endTime) {
+          let start = new Date(this.searchForm.beginTime).getTime()
+          let end = new Date(this.searchForm.endTime).getTime()
           console.log(start);
           console.log(end);
           if (start > end) {
             this.$message.error('终止时间不能小于开始时间')
             if (type == 1) {
-              this.searchForm.startPeriod = '';
+              this.searchForm.beginTime = '';
             } else if (type == 2) {
-              this.searchForm.endPeriod = '';
+              this.searchForm.endTime = '';
             }
           }
         }

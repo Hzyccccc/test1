@@ -5,7 +5,7 @@ import { getUser } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://172.10.0.39:8018', // url = base url + request url
+  baseURL: 'http://172.10.0.26:8019', // url = base url + request url
   timeout: 50000, // request timeout
   // withCredentials: true,
   headers: {

@@ -13,6 +13,7 @@ import '@/styles/index.scss' // 全局样式
 import App from './App'
 import store from './store'
 import router from './router'
+import method from './utils/index' //全局方法
 
 import '@/icons' // icon
 import '@/permission' // 全局权限控制
@@ -27,6 +28,7 @@ import md5 from 'js-md5'
 
 Vue.prototype.$md5 = md5
 Vue.prototype.$auth = auth
+Vue.prototype.$method = method
 
 Vue.config.productionTip = false
 
