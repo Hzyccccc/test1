@@ -10,7 +10,7 @@
         <el-button type="primary" @click="getInfo(companyname)">查询</el-button>
         <el-button type="primary" @click="moveNull">重置</el-button>
         <el-button type="primary" @click="xiuFormVisible = true">新增</el-button>
-        <el-button type="primary" @click="deleteMoreUser" v-show="flager">删除</el-button>
+        <el-button type="primary" @click="deleteMoreUser(),open1" v-show="flager">删除</el-button>
       </el-form-item>
     </el-form>
     <!-- 新增公司页面 -->
@@ -45,9 +45,9 @@
           prop="contactnumber"
           :label-width="formLabelWidth"
           :rules="[
-            {required: true, message:'手机号码不能为空'},
-            {max: 11, message:'手机号码有误，请重新输入'},
-           
+            {required: true, message:'号码不能为空',trigger: 'blur'},
+            {pattern:/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/,message: '手机号码格式错误', trigger: 'blur' },
+          
             ]"
         >
           <el-input v-model.number="form.contactnumber" autocomplete="off" />
@@ -60,7 +60,7 @@
           :rules="[
          
             {max: 11, message:'格式有误，请重新输入'},
-            {pattern:'^(\(\d{3,4}-)|\d{3.4}-)?\d{7,8}$',message:'手机号码有误，请重新输入'}
+          
             ]"
         >
           <el-input v-model.number="form.companyTel" autocomplete="off" />
@@ -141,7 +141,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="xiuFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="xiuFormVisible = false, addForm('form')">保存</el-button>
+        <el-button type="primary" @click="xiuFormVisible = flag, addForm('form')">保存</el-button>
       </div>
     </el-dialog>
 
@@ -177,8 +177,9 @@
           prop="contactnumber"
           :label-width="formLabelWidth"
           :rules="[
-            {required: true, message:'手机号码不能为空'},
-            {max: 11, message:'手机号码有误，请重新输入'},
+            {required: true, message:'号码不能为空',trigger: 'blur'},
+            {pattern:/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/,message: '手机号码格式错误', trigger: 'blur' },
+          
            
             ]"
         >
@@ -191,8 +192,8 @@
           :label-width="formLabelWidth"
           :rules="[
          
-            {max: 11, message:'格式有误，请重新输入'},
-            {pattern:'^(\(\d{3,4}-)|\d{3.4}-)?\d{7,8}$',message:'手机号码有误，请重新输入'}
+            {max: 11, message:'号码格式有误，请重新输入'},
+            {pattern:/^((0\d{2,3}-\d{7,8})|(1[3584]\d{9}))$/,message:'号码格式有误，请重新输入'}
             ]"
         >
           <el-input v-model.number="ruleForm.companyTel" autocomplete="off" />
@@ -217,7 +218,7 @@
               { pattern: '^\d{6}$', message: '格式有误，请重新输入'}
             ]"
         >
-          <el-input v-model="ruleForm.companyPostCode" autocomplete="off" />
+          <el-input v-model.number="ruleForm.companyPostCode" autocomplete="off" />
         </el-form-item>
 
         <el-form-item
@@ -228,7 +229,9 @@
             ]"
         >
           <el-col :span="8">
-            <el-form-item prop="date1">
+            <el-form-item prop="date1"
+           
+            >
               <el-date-picker
                 type="date"
                 value-format="yyyy-MM-dd"
@@ -304,7 +307,7 @@
           <el-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row),open2()"
+            @click="handleDelete(scope.$index, scope.row)"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -342,12 +345,15 @@ export default {
         data2: "",
         expireTime: ""
       },
+      // 公司名
+      resuLogo:'',
       ruleFormt: {},
       companyname: "",
       tableData: [],
       search: "",
       delId: "",
       delMore: [],
+      flag:true,
       flager: false,
       xiuTableVisible: false,
       xiuFormVisible: false,
@@ -363,10 +369,13 @@ export default {
         expireTime: "",
         status: "",
         id: "",
+        tenantId:'',
         data1: "",
         data2: "",
         expireTime: ""
       },
+      // 公司依赖项
+      companyList:[],
       formLabelWidth: "120px",
       // 第几页
       pageNum: 1,
@@ -384,14 +393,15 @@ export default {
     addForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          alert("submit!");
+          flag = fasle;
+          alert("新增成功!");
         } else {
-          console.log("error submit!!");
           return false;
         }
       });
       //提交
       this.form.expireTime = this.form.data1 + " " + this.form.date2;
+      console.log(this.form.expireTime);
       this.$http
         .post("/tenant/addTenant", {
           info: {
@@ -423,7 +433,8 @@ export default {
       //提交
       this.ruleForm.expireTime =
         this.ruleForm.data1 + " " + this.ruleForm.date2;
-
+      console.log(this.ruleForm.expireTime);
+      
       this.$http
         .post("/tenant/editTenant", {
           info: {
@@ -436,26 +447,74 @@ export default {
             expireTime: this.ruleForm.expireTime,
             status: this.ruleForm.status,
             id: this.ruleForm.id,
+            tenantId:this.ruleForm.id,
             expireTime: this.ruleForm.expireTime
           }
         })
-        .then(res => {});
+        .then(res => {
+          this.ruleForm = {}
+        });
     },
-
+    //校验当前租户是否已有单据
+   IsDependenced(ids){
+     this.$http.post('/tenant/checkTenantIsDependenced',{
+       ids
+     }).then(res=>{
+       if(res.code === 200) {
+        this.$confirm('确定删除选中的公司数据么？', "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.deleteMoreUser();
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+       }else {
+         this.companyList = res.data.companyList
+       }
+      //  console.log('========');
+       
+      //  console.log(this.companyList);
+      //  console.log('========');
+       
+      //  this.open2()
+       
+     })
+   },
     handleEdit(index, row) {
+ 
+      
       this.ruleForm = row;
     },
     handleDelete(index, row) {
-      this.delId = row.id;
+      console.log('*******');
+      console.log(row);
+      console.log('*******');
+      
+      this.delId = row.tenantId;
+          this.IsDependenced(this.delId)
+
       // console.log(this.delId);
     },
     //删除
     deleteUser(id) {
       this.$http
-        .get("/tenant/deleteTenant/", {
-          id
+        .get('/tenant/deleteTenant/',{
+          ids : id 
         })
         .then(res => {
+          console.log('shanchu ');
+          
           this.getInfo();
         });
     },
@@ -468,7 +527,6 @@ export default {
     },
     //多删
     deleteMoreUser() {
-      console.log("多选删除");
 
       this.multipleSelection.forEach(element => {
         if (this.delMore.indexOf(element.id) < 0) {
@@ -476,13 +534,16 @@ export default {
         }
       });
       // console.log(this.delMore);
-
-      this.deleteUser(this.delMore);
+      this.IsDependenced(this.delMore)
+      // this.deleteUser(this.delMore);
       // this.delMore = [];
+    },
+    open1() {
+      
     },
     //提醒
     open2() {
-      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+      this.$confirm(`${this.companyList.length > 0 ? '该公司有依赖数据是否确定强制删除？': '确定删除选中的公司数据么？'}`, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"

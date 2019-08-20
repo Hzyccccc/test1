@@ -17,7 +17,7 @@
     </div>
     <!-- 添加弹窗 -->
     <!-- 编辑公司表单 -->
-    <!-- <el-dialog title="添加部门信息" :visible.sync="dialogFormVisible">
+    <el-dialog title="添加部门信息" :visible.sync="dialogFormVisible">
       <el-form :model="form" ref="form">
         <el-form-item
           label="公司名称"
@@ -42,7 +42,7 @@
               { max: 30, message: '超出最大长度'}
             ]"
         >
-          <el-input v-model="ruleForm.companyContacts" autocomplete="off" />
+          <el-input v-model="form.companyContacts" autocomplete="off" />
         </el-form-item>
 
         <el-form-item
@@ -55,7 +55,7 @@
            
             ]"
         >
-          <el-input v-model.number="ruleForm.contactnumber" autocomplete="off" />
+          <el-input v-model.number="form.contactnumber" autocomplete="off" />
         </el-form-item>
 
         <el-form-item
@@ -68,7 +68,7 @@
             
             ]"
         >
-          <el-input v-model.number="ruleForm.companyTel" autocomplete="off" />
+          <el-input v-model.number="form.companyTel" autocomplete="off" />
         </el-form-item>
         <el-form-item
           label="状态"
@@ -78,7 +78,7 @@
               { required: true, message: '请选择状态'}
             ]"
         >
-          <el-select placeholder="请选择状态" v-model="ruleForm.status">
+          <el-select placeholder="请选择状态" v-model="form.status">
             <el-option label="未营业" value="1"></el-option>
             <el-option label="正常营业" value="2"></el-option>
             <el-option label="暂停营业" value="3"></el-option>
@@ -93,7 +93,7 @@
               { required: true, message: '请填写编码'}
             ]"
         >
-          <el-input v-model="ruleForm.companyPostCode" autocomplete="off" />
+          <el-input v-model="form.companyPostCode" autocomplete="off" />
         </el-form-item>
         <el-form-item
           label="序号"
@@ -103,7 +103,7 @@
               { required: true, message: '请填写序号'}
             ]"
         >
-          <el-input v-model="ruleForm.companyPostCode" autocomplete="off" />
+          <el-input v-model="form.companyPostCode" autocomplete="off" />
         </el-form-item>
         <el-form-item
           label="服务结束时间"
@@ -118,7 +118,7 @@
                 type="date"
                 value-format="yyyy-MM-dd"
                 placeholder="选择日期"
-                v-model="ruleForm.data1"
+                v-model="form.data1"
                 style="width: 100%;"
               ></el-date-picker>
             </el-form-item>
@@ -135,7 +135,7 @@
                 type="fixed-time"
                 placeholder="选择时间"
                 value-format="HH:MM:dd"
-                v-model="ruleForm.date2"
+                v-model="form.date2"
                 style="width: 100%;"
               ></el-time-picker>
             </el-form-item>
@@ -161,9 +161,9 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = true, submitForm('ruleForm')">保存</el-button>
+        <el-button type="primary" @click="dialogFormVisible = true, submitForm('form')">保存</el-button>
       </div>
-    </el-dialog> -->
+    </el-dialog>
     <el-button type="primary" @click="dialogFormVisible = true">新增用户</el-button>
   </div>
 </template>
@@ -181,7 +181,7 @@ export default {
         label: "text"
       },
       search: "",
-      flag:false,
+      flag: false,
       dialogTableVisible: false,
       dialogFormVisible: false,
       form: {
@@ -205,6 +205,17 @@ export default {
     this.getOrganizationTree();
   },
   methods: {
+    //新增验证
+    submitForm(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          alert("submit!");
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
     append(data) {
       this.dialogFormVisible = true;
     },
@@ -226,14 +237,14 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.flag = true
+          this.flag = true;
           this.$message({
             type: "success",
             message: "删除成功!"
           });
         })
         .catch(() => {
-          this.flag = false
+          this.flag = false;
           this.$message({
             type: "info",
             message: "已取消删除"
@@ -242,31 +253,32 @@ export default {
     },
     // 删除
     remove(node, data) {
-      this.open()
-      if(this.flag){
-        this.$http.post('/organization/batchDeleteOrganization',{
-          ids:data.id
-        }).then(res=>{
-          const parent = node.parent;
-          const children = parent.data.children || parent.data;
-          const index = children.findIndex(d => d.id === data.id);
-          children.splice(index, 1);
-        })
+      this.open();
+      if (this.flag) {
+        this.$http
+          .post("/organization/batchDeleteOrganization", {
+            ids: data.id
+          })
+          .then(res => {
+            const parent = node.parent;
+            const children = parent.data.children || parent.data;
+            const index = children.findIndex(d => d.id === data.id);
+            children.splice(index, 1);
+          });
       }
-      
     },
-// ············<el-button
-//               size="mini"
-//               type="text"
-//               on-click={() => this.append(data)}
-//             >
-//               添加
-//             </el-button>
+    // ············<el-button
+    //               size="mini"
+    //               type="text"
+    //               on-click={() => this.append(data)}
+    //             >
+    //               添加
+    //             </el-button>
     renderContent(h, { node, data, store }) {
       return (
         <span class="custom-tree-node">
           <span>{node.label}</span>
-          <span>  
+          <span>
             <el-button
               size="mini"
               type="text"
@@ -280,19 +292,24 @@ export default {
     },
     //请求部门列表
     getOrganizationTree() {
-      console.log(11);
-
+      console.log(123);
+      
       this.$http
         .post("organization/getOrganizationTree", {
           id: -1
         })
         .then(res => {
-          console.log(222);
+          console.log(1234);
 
           this.requert = res.data;
-          console.log(this.requert);
+          
+          console.log('======');
+
         })
-        .catch(req => {});
+        .catch(req => {
+          console.log();
+          
+        });
     }
   }
 };

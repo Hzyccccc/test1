@@ -8,6 +8,57 @@
  * @param {string} cFormat
  * @returns {string}
  */
+import _ from 'lodash'
+
+let time = 3  //提示框倒计时
+let play = null  //定时器
+let messBtn = true
+let messs = _.throttle(function(that, cont, error) {
+  /*未登录*/
+  clearInterval(play)
+  play = setInterval(() => {
+    time--
+    messBtn = false
+    if (time <= 0) {
+      messBtn = true
+      clearInterval(play)
+      time = 3
+    }
+  }, 1000)
+  if (!messBtn) {
+    return
+  }
+  if (!cont) {
+    return
+  }
+  if (error == '200') {
+    that.$message.success(cont)
+  } else if (error == '55555' || error == '59999') {
+    // console.log(error)
+    that.$message.error(cont)
+    that.$cookies.remove('zdzwInfo')
+    that.$store.state.loginInfo = {}
+    setTimeout(() => {
+      that.$router.push({ path: '/user/login', query: { type: 1 } })
+    }, 2000)
+  } else if (error == '5217') {
+    that.$message.error(cont)
+    setTimeout(() => {
+      that.$router.push({ path: '/' })
+    }, 2000)
+  } else if (error == '30006') {
+
+  } else {
+    /*错误信息提示*/
+    that.$message.error(cont)
+  }
+}, 2000, { 'trailing': false })
+
+export function message(that, cont, error) {
+  /*公共弹框*/
+  messs(that, cont, error)
+}
+
 export function parseTime(time, cFormat) {
   if (arguments.length === 0) {
     return null
@@ -37,7 +88,9 @@ export function parseTime(time, cFormat) {
   const time_str = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key]
     // Note: getDay() returns 0 on Sunday
-    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value ] }
+    if (key === 'a') {
+      return ['日', '一', '二', '三', '四', '五', '六'][value]
+    }
     if (result.length > 0 && value < 10) {
       value = '0' + value
     }
@@ -100,12 +153,12 @@ export function param2Obj(url) {
   }
   return JSON.parse(
     '{"' +
-      decodeURIComponent(search)
-        .replace(/"/g, '\\"')
-        .replace(/&/g, '","')
-        .replace(/=/g, '":"')
-        .replace(/\+/g, ' ') +
-      '"}'
+    decodeURIComponent(search)
+      .replace(/"/g, '\\"')
+      .replace(/&/g, '","')
+      .replace(/=/g, '":"')
+      .replace(/\+/g, ' ') +
+    '"}'
   )
 }
 
@@ -119,4 +172,14 @@ export function cleardata(data) {
   })
   return data
 }
+
+export default {
+
+  getSTime1(val) {
+    let date = new Date(Date.parse(val))
+    return date.getFullYear() + '-' + (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate())
+  }
+}
+
+
 

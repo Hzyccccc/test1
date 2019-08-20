@@ -19,11 +19,12 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
   config => {
-    console.log('config')
-    console.log(config)
     if (config.type) {
       if (config.type === 'encodeURIPost') {
         config.transformRequest = [function(data) {
+          console.log('###########')
+          console.log(data)
+          console.log('###########')
           let ret = ''
           for (const it in data) {
             ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
@@ -38,6 +39,7 @@ service.interceptors.request.use(
     if (store.getters.userInfo) {
       config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).userId : ''
     }
+    console.log(config)
     return config
   },
   error => {
@@ -52,7 +54,6 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
-    console.log(res)
     // if the custom code is not 20000, it is judged as an error.
     if (res.code !== 200) {
       Message({
