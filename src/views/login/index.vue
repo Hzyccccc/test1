@@ -98,23 +98,23 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
+    async handleLogin() {
       console.log(111111)
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
           
-          this.$store.dispatch('user/login', {
+         this.$store.dispatch('user/login', {
             loginame : this.loginForm.username,
             password:this.$md5(this.loginForm.password)
           }).then(() => {
-            
             this.$router.push({ path: this.redirect || '/' })
             this.loading = false
           }).catch(() => {
             console.log(4444444)
             this.loading = false
           })
+
         } else {
           console.log('error submit!!')
           return false

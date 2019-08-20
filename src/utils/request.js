@@ -5,8 +5,11 @@ import { getUser } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://172.10.0.39:8018', // url = base url + request url
-  timeout: 50000, // request timeout
+  // baseURL: 'http://172.10.0.96:8019', // url = base url + request url
+  // baseURL: 'http://172.10.0.130:8019', //杜远天本地
+  baseURL: 'http://172.10.0.26:8019', //周武本地
+
+  timeout: 60000, // request timeout
   // withCredentials: true,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded'
@@ -16,9 +19,6 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
   config => {
-    console.log('config------');
-    console.log(config.type);
-    console.log('config-----');
     if (config.type) {
       if (config.type === 'encodeURIPost') {
         config.transformRequest = [function(data) {
@@ -46,7 +46,7 @@ service.interceptors.request.use(
     // do something with request error
     console.log(error) // for debug
     console.log('报错')
-    
+
     return Promise.reject(error)
   }
 )
@@ -54,9 +54,6 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
-    console.log('**********')
-    console.log(response);
-    
     // if the custom code is not 20000, it is judged as an error.
     if (res.code !== 200) {
       Message({
@@ -84,8 +81,8 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log(error.code);
-    
+    console.log(error.code)
+
     if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1) {
       Message.error({ message: '请求超时!' })
     } else {
