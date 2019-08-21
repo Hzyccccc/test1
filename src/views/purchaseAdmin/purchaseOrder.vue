@@ -34,9 +34,9 @@
          <div class="cont">
             <div class="operation">
               <el-button type="primary" @click="add">增加</el-button>
-              <el-button type="primary">删除</el-button>
-              <el-button type="primary">审核</el-button>
-              <el-button type="primary">反审核</el-button>
+              <el-button type="primary" @click="batchRemove">删除</el-button>
+              <el-button type="primary" @click="batchToexamine(0)">审核</el-button>
+              <el-button type="primary" @click="batchToexamine(1)">反审核</el-button>
             </div>
             <div class="table">
               <el-table
@@ -53,9 +53,9 @@
                   label="操作"
                   >
                   <template slot-scope="scope">
-                      <el-button type="text">查看</el-button>
+                      <el-button type="text" @click="seeDetails(scope.row)">查看</el-button>
                       <el-button type="text">编辑</el-button>
-                      <el-button type="text">删除</el-button>
+                      <el-button type="text" @click="tableInfo[0]=scope.row;batchRemove();">删除</el-button>
                       <el-button type="text">转采购入库</el-button>
                    </template>
                 </el-table-column>
@@ -128,7 +128,7 @@ export default {
           pageSize: 10,
           total: 0,
 
-          userBusinessValue:''
+          userBusinessValue:'',
       }
   },
   computed: {
@@ -140,8 +140,20 @@ export default {
     this.seeUserWarehouse().then(() => {
       this.seeOderList();
     });
+    
   },
   methods: {
+    seeDetails(item) {
+      console.log(item);
+      // this.$router.push({path:'addOrderInfo',params:{id:item.id,type:'1'}})
+      //  this.$router.push({
+      //     name: 'addOrderInfo',
+      //     query: {
+      //       id: item.id,
+      //     }
+      //   })
+        this.$router.push({path: '/workbench/contract',query: {type:'1',id:row.id}})
+    },
      /*查询用户仓库*/
       async seeUserWarehouse() {
         let data = {
@@ -164,7 +176,6 @@ export default {
       /*采购订单列表 */ 
       async seeOderList() {
         let timeS,timeE;
-
         if (this.searchForm.beginTime && this.searchForm.endTime) {
           timeS = this.$method.getSTime1(this.searchForm.beginTime);
           timeE = this.$method.getSTime1(this.searchForm.endTime);
@@ -210,6 +221,117 @@ export default {
             } 
         })
       },
+      /*批量审核/反审核*/
+      async batchToexamine(status) {
+        if (this.tableInfo.length) {
+            let statutList = [];
+            await this.tableInfo.map((item) => {
+               statutList.push(item.status);
+            })
+            statutList = [...new Set(statutList)];
+            console.log(statutList);
+
+            if(statutList.length > 1 ) {
+              this.$message.error('请选择相同状态的订单!');
+              return;
+            } else {
+               if(statutList[0]  != status) {
+                 let tit = status == 0 ? '请选择未审核状态下的订单' : '请选择已审核状态下的订单'
+                 this.$message.error(tit);
+                 return;
+               }
+            }
+            /*审核*/
+            this.toexamine();
+
+        } else {
+          this.$message.error('请选择订单')
+        }
+      },
+      /*审核接口*/
+      async toexamine() {
+        let reviewStatus =  this.tableInfo[0].status;
+        let tit;
+        if(reviewStatus == 0) {
+            reviewStatus = 1;
+            tit='审核成功';
+        } else {
+           reviewStatus = 0;
+           tit='反审核成功';
+        }
+        let auditIds = [];
+        await this.tableInfo.map((item) => {
+            auditIds.push(item.id);
+        })
+        let data = {
+          status: reviewStatus,
+          depotHeadIDs : auditIds.join(',')
+        }
+        console.log('审核接口,data');
+        console.log(data);
+        await this.$http.post('/depotHead/batchSetStatus',data).then(res=>{
+            console.log('批量审核/反审核');
+            console.log(res);
+            if(res.code == 200) {
+              this.seeOderList();
+              this.$message({
+                message: '修改成功',
+                type: 'success'
+              });
+            } 
+        })
+      },
+      /*删除,批量删除*/
+      async batchRemove() {
+         if (this.tableInfo.length) {
+          console.log(this.listInfo);
+          let idList = [];  //符合条件id数组
+          let noApi = false; 
+          await this.tableInfo.map((item) => {
+              if(item.status == 0) {
+                  idList.push(item.id);
+              } else {
+                noApi = true;
+              }
+          })
+          if(noApi) {
+             this.$message.error('已审核和已转的单据不能删除!');
+             return;
+          }
+          this.$confirm('确定要删除选中的单据吗?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              /*删除单据 */
+               this.removeOder(idList);
+
+            }).catch(() => {
+                  
+            });
+            } else {
+              this.$message.error('请选择客户')
+            }
+      },
+      /*删除接口 */
+      async removeOder(idList) {
+        console.log('idList');
+        console.log(idList);
+        let data = {
+          ids: idList.join(',')
+        }
+        await this.$http.get('/depotHead/batchDeleteDepotHeadAndDetail',data).then(res=>{
+            console.log('批量删除接口');
+            console.log(res);
+            if(res.code == 200) {
+              this.seeOderList();
+              this.$message({
+                message: '删除成功',
+                type: 'success'
+              });
+            } 
+        })
+      },
       add() {
         this.$router.push({path:'addOrderInfo'});
       },
@@ -229,6 +351,7 @@ export default {
       },
       /*多选*/
       handleSelectionChange(val) {
+        console.log(val);
         this.tableInfo = val;
       },
       /*日期 */
