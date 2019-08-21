@@ -82,6 +82,7 @@ div:focus {
 
 body .main-container .app-main {
   background-color: #f0f0f0;
+  overflow: scroll;
   >div{
     margin: 20px;
     background-color: #fff;
