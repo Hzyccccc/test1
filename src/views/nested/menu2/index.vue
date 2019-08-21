@@ -303,8 +303,7 @@ export default {
       },  
       handleSizeChange(val) {     
         this.pageSize = val
-        console.log(this.pageSize);
-        console.log('======');
+     
         
         this.getInfo()
       },
