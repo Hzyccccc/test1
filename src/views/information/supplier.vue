@@ -244,17 +244,6 @@
           type: '供应商',
           enabled: 1
         },
-        serialList: [
-          {
-            id: 1,
-            name: '禁用'
-          },
-          {
-            id: 2,
-            name: '启用'
-          }
-        ],
-        serialNum: '',
         rules: {
           supplier: [
             { required: true, message: '请输入供应商名称', trigger: 'blur' },
@@ -329,23 +318,9 @@
         this.getsupplierList()
         console.log(`当前页: ${val}`)
       },
-      /*查询*/
-      queryFuncBtn() {
-        this.pageNum = 1
-        this.getsupplierList()
-      },
-      /*重置*/
-      resetFuncBtn() {
-        this.pageNum = 1
-        this.pageSize = 10
-        this.navFrom = {
-          supplier: '',
-          type: '',
-          phonenum: '',
-          telephone: '',
-          description: ''
-        },
-          this.getsupplierList()
+      /*变换表格选择的数组*/
+      handleSelectionChange(val) {
+        this.activeList = val
       },
       /*查询供应商列表*/
       async getsupplierList() {
@@ -368,6 +343,24 @@
         } else {
           this.$method.message(this, res.msg, 500)
         }
+      },
+      /*查询*/
+      queryFuncBtn() {
+        this.pageNum = 1
+        this.getsupplierList()
+      },
+      /*重置*/
+      resetFuncBtn() {
+        this.pageNum = 1
+        this.pageSize = 10
+        this.navFrom = {
+          supplier: '',
+          type: '',
+          phonenum: '',
+          telephone: '',
+          description: ''
+        },
+          this.getsupplierList()
       },
       /*验证新增供应商表单*/
       submitForm(formName) {
@@ -439,10 +432,6 @@
         } else {
           this.$method.message(this, res.msg, 500)
         }
-      },
-      /*变换表格选择的数组*/
-      handleSelectionChange(val) {
-        this.activeList = val
       },
       /*编辑供应商信息*/
       editsupplier(row) {
@@ -653,8 +642,9 @@
           telephone: this.navFrom.telephone,
           description: this.navFrom.description
         }
-        let res = await this.$http.filePost('/supplier/exportExcel', data, { 'responseType': 'blob' })
-        console.log(res)
+        let res = await this.$http.fileGet('/supplier/exportExcel', data)
+        console.log(res.data)
+        // return
         this.$http.exportExcel(res, '信息报表')
       }
 

@@ -1,13 +1,13 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
-import { getUser } from '@/utils/auth'
+import { setUser,getUser } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
   // baseURL: 'http://172.10.0.96:8019', // url = base url + request url
-  // baseURL: 'http://172.10.0.130:8019', //杜远天本地
-  baseURL: 'http://172.10.0.26:8019', //周武本地
+  baseURL: 'http://172.10.0.130:8019', //杜远天本地
+  // baseURL: 'http://172.10.0.26:8019', //周武本地
 
   timeout: 60000, // request timeout
   // withCredentials: true,
@@ -37,8 +37,12 @@ service.interceptors.request.use(
         }
       }
     }
+    console.log('------')
+    console.log(store.getters.userInfo)
+    console.log(getUser() ? JSON.parse(getUser()).token : '')
+    console.log('------')
     if (store.getters.userInfo) {
-      config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).userId : ''
+      config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).token : ''
     }
     console.log(config)
     return config

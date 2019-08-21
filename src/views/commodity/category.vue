@@ -6,9 +6,12 @@
     </div>
     <div class="cont">
       <el-tree
-        :data="data"
+        ref="tree"
+        :data="chargeData"
         show-checkbox
         node-key="id"
+        :default-expand-all="true"
+        @check-change="checkActive"
         :default-expanded-keys="[2, 3]"
         :default-checked-keys="[5]"
         :props="defaultProps">
@@ -22,50 +25,36 @@
     name: 'category',
     data() {
       return {
-        data: [{
-          id: 1,
-          label: '一级 1',
-          children: [{
-            id: 4,
-            label: '二级 1-1',
-            children: [{
-              id: 9,
-              label: '三级 1-1-1'
-            }, {
-              id: 10,
-              label: '三级 1-1-2'
-            }]
-          }]
-        }, {
-          id: 2,
-          label: '一级 2',
-          children: [{
-            id: 5,
-            label: '二级 2-1'
-          }, {
-            id: 6,
-            label: '二级 2-2'
-          }]
-        }, {
-          id: 3,
-          label: '一级 3',
-          children: [{
-            id: 7,
-            label: '二级 3-1'
-          }, {
-            id: 8,
-            label: '二级 3-2'
-          }]
-        }],
+        chargeData: [],
         defaultProps: {
           children: 'children',
-          label: 'label'
-        }
+          label: 'text'
+        },
+        activeArr: []
       }
     },
     created() {
+      this.getCommodityTypes()
     },
-    methods: {}
+    methods: {
+      /*获取商品类型*/
+      async getCommodityTypes() {
+        let data = {}
+        let res = await this.$http.get('/materialCategory/getMaterialCategoryTree?id=', data)
+        console.log(res)
+        this.chargeData = res
+
+      },
+      /*修改状态的时候修改数据*/
+      checkActive() {
+        let res = this.$refs.tree.getCheckedNodes()
+        res.forEach((item) => {
+          this.activeArr.push(item.id)
+        })
+        console.log(this.activeArr)
+      },
+      /**/
+    }
   }
 </script>
 
