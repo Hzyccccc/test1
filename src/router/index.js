@@ -317,6 +317,38 @@ export const constantRoutes = [
       }
     ]
   },
+  //库存管理
+  {
+    path: '/stock',
+    component: Layout,
+    redirect: '/stock/otherDepots',
+    name: '库存管理',
+    meta: {
+      title: '库存管理`',
+      icon: 'finance'
+    },
+    children: [
+      {
+        path: 'otherDepots',
+        component: () => import('@/views/stock/otherDepots'), // Parent router-view
+        name: 'otherDepots',
+        meta: { title: '其他入库单', noCache: true }
+      },
+      {
+        path: 'otherwarehousing',
+        component: () => import('@/views/stock/otherwarehousing'),
+        name: 'otherwarehousing',
+        meta: { title: '其他出库单', noCache: true }
+      },
+      {
+        path: 'summaryReceiving',
+        component: () => import('@/views/stock/summaryReceiving'),
+        name: 'summaryReceiving',
+        meta: { title: '收发存汇总表', noCache: true }
+      }
+    ]
+  },
+
 // 404 page must be placed at the end !!!
   {
     path: '*', redirect:
