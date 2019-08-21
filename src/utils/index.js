@@ -13,7 +13,7 @@ import _ from 'lodash'
 let time = 3  //提示框倒计时
 let play = null  //定时器
 let messBtn = true
-let messs = _.throttle(function(that, cont, error) {
+let messs = _.throttle(function(that, cont, code) {
   /*未登录*/
   clearInterval(play)
   play = setInterval(() => {
@@ -31,33 +31,28 @@ let messs = _.throttle(function(that, cont, error) {
   if (!cont) {
     return
   }
-  if (error == '200') {
+  if (code == '200') {
     that.$message.success(cont)
-  } else if (error == '55555' || error == '59999') {
-    // console.log(error)
+  } else if (code == '55555' || code == '59999') {
+    // console.log(code)
     that.$message.error(cont)
-    that.$cookies.remove('zdzwInfo')
+    // that.$cookies.remove('zdzwInfo')
     that.$store.state.loginInfo = {}
     setTimeout(() => {
-      that.$router.push({ path: '/user/login', query: { type: 1 } })
+      that.$router.push({ path: '/login', query: { type: 1 } })
     }, 2000)
-  } else if (error == '5217') {
+  } else if (code == '5217') {
     that.$message.error(cont)
     setTimeout(() => {
       that.$router.push({ path: '/' })
     }, 2000)
-  } else if (error == '30006') {
+  } else if (code == '30006') {
 
   } else {
     /*错误信息提示*/
     that.$message.error(cont)
   }
 }, 2000, { 'trailing': false })
-
-export function message(that, cont, error) {
-  /*公共弹框*/
-  messs(that, cont, error)
-}
 
 export function parseTime(time, cFormat) {
   if (arguments.length === 0) {
@@ -174,7 +169,18 @@ export function cleardata(data) {
 }
 
 export default {
+  message(that, cont, code) {
+    /*公共弹框*/
+    messs(that, cont, code)
+  },
+  alertBox(that, cont) {
+    that.$alert(cont, '提示', {
+      confirmButtonText: '确定',
+      callback: action => {
 
+      }
+    })
+  },
   getSTime1(val) {
     let date = new Date(Date.parse(val))
     return date.getFullYear() + '-' + (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate())
