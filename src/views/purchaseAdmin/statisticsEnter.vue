@@ -83,7 +83,7 @@ export default {
         }
     },
     methods:{
-        /*查询用户商品ID 根据月份*/
+        /*查询用户商品ID 根据月份*/ 
         async seeUserMonth() {
             let data = {
             monthTime:this.monthTime,
