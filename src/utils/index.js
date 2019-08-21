@@ -185,6 +185,15 @@ export default {
     let date = new Date(Date.parse(val))
     return date.getFullYear() + '-' + (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate())
   },
+  getSTime2(val) {
+    let d = new Date(Date.parse(val));
+    let hour = d.getHours() < 10 ? '0'+ d.getHours() : d.getHours();
+    let Minute = d.getMinutes() < 10 ? '0'+ d.getMinutes() : d.getMinutes();
+    let second = d.getSeconds() < 10 ? '0'+ d.getSeconds() : d.getSeconds();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + hour + ':' + Minute + ':' + second;
+    }
+
+  },
 
   /* len保留的长度*/
   /**

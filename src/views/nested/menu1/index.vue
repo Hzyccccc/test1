@@ -2,7 +2,7 @@
   <div>
     <!-- 头部 -->
     <el-form :inline="true" class="demo-form-inline">
-      <el-form-item label="登陆名称">
+      <el-form-item label="登录名称">
         <el-input v-model="searchName" />
       </el-form-item>
       <el-form-item label="用户名称">
@@ -12,46 +12,54 @@
       <el-form-item>
         <el-button type="primary" @click="getInfo(searchUser,searchName)">查询</el-button>
         <el-button type="primary" @click="moveNull">重置</el-button>
-        <el-button type="primary">分配角色</el-button>
-        <el-button type="primary">分配仓库</el-button>
+        <el-button type="primary" @click="AssignmentRoles = distribution">分配角色</el-button>
+        <el-button type="primary" @click="DistributionWarehouse = true">分配仓库</el-button>
+        <el-button type="primary" @click="DistributionCustomers = distribution, takeWarehouse()">分配客户</el-button>
         <el-button type="primary" @click="dialogFormVisible = true">新增用户</el-button>
-        <el-button type="primary" @click="deleteMoreUser" v-show="flager">删除</el-button>
+        <el-button type="danger" @click="deleteMoreUser" v-show="flager">删除</el-button>
       </el-form-item>
     </el-form>
     <!-- 新增用户 -->
     <el-dialog title="新增用户" :visible.sync="dialogFormVisible">
       <el-form :model="form" ref="form">
         <el-form-item
-          label="登陆名称"
+          label="登录名称"
           prop="loginame"
           :label-width="formLabelWidth"
           :rules="[
-              { required: true, message: '登陆名称不能为空',trigger: 'blur'},             
+              { required: true, message: '登录名称不能为空',trigger: 'blur'},             
               { max: 60, message: '长度不能大于60'}
             ]"
         >
           <el-input v-model="form.loginame" autocomplete="off" />
         </el-form-item>
+        
         <el-form-item
-          label="所属公司"
-          :label-width="formLabelWidth"
+          label="公司名称"
           prop="companyName"
-          :rules="[
-              { required: true, message: '请选择所属公司'},             
-            ]"
+          :label-width="formLabelWidth"
+         
         >
-          <el-select v-model="form.companyName" placeholder="请选择">
+          <el-select no-data-text="请选择公司名称" :disabled="testName" v-model="form.companyName">
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-            <span style="float: left">{{ }}</span>
+              v-for="item in this.userCompanyName"
+              :key="item.tenantId"
+              :label="item.companyName"
+              size="mini"
+              :value="item.tenantId">
+            </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="部门" :label-width="formLabelWidth">
-          <el-input v-model="form.orgAbr" autocomplete="off" />
+
+        <el-form-item label="部门" prop="orgParentName" :label-width="formLabelWidth">
+          <el-cascader
+            :options="requerts"
+            :props="props"
+            :show-all-levels="false"
+            change-on-select
+            v-model="form.orgParentName"
+            @change="handleChange"
+          ></el-cascader>
         </el-form-item>
         <el-form-item
           label="用户名称"
@@ -88,7 +96,6 @@
           prop="email"
           :label-width="formLabelWidth"
           :rules="[
-              { required: true, message: '电子邮箱不能为空',trigger: 'blur'},
               { type: 'email', message: '电子邮箱格式错误'}
             ]"
         >
@@ -120,56 +127,52 @@
     </el-dialog>
     <!-- 修改 -->
     <el-dialog title="修改用户" :visible.sync="reviseFromdata">
-      <el-form :model="form" ref="form">
+      <el-form :model="formTest" ref="formTest">
         <el-form-item
-          label="登陆名称"
+          label="登录名称"
           prop="loginame"
           :label-width="formLabelWidth"
           :rules="[
-              { required: true, message: '登陆名称不能为空'},             
+              { required: true, message: '登录名称不能为空'},             
               { max: 60, message: '长度不能大于60'}
             ]"
         >
-          <el-input v-model="form.loginame" autocomplete="off" />
+          <el-input v-model="formTest.loginame" autocomplete="off" />
         </el-form-item>
-        <el-form-item
-          label="所属公司"
-          :label-width="formLabelWidth"
+        
+          <el-form-item
+          label="公司名称"
           prop="companyName"
-          :rules="[
-              { required: true, message: '请选择所属公司'},             
-            ]"
+          :label-width="formLabelWidth"
         >
-          <el-select v-model="form.companyName" placeholder="请选择">
+          <el-select no-data-text="请选择公司名称" :disabled="testName" v-model="formTest.companyName">
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-            <span style="float: left">{{ }}</span>
+              v-for="item in this.userCompanyName"
+              :key="item.tenantId"
+              :label="item.companyName"
+              size="mini"
+              :value="item.tenantId">
+            </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="部门" :label-width="formLabelWidth">
-          <el-input v-model="form.orgAbr" autocomplete="off" />
-        </el-form-item>
-        <el-form-item
-          label="用户名称"
-          prop="username"
-          :label-width="formLabelWidth"
-          :rules="[
-              { required: true, message: '用户名称不能为空'},             
-              { max: 60, message: '长度不能大于60'}
-            ]"
-        >
-          <el-input v-model="form.username" autocomplete="off" />
+
+        
+        <el-form-item label="部门" prop="orgParentName" :label-width="formLabelWidth">
+          <el-cascader
+            :options="requerts"
+            :props="props"
+            :show-all-levels="false"
+            change-on-select
+            v-model="formTest.orgParentName"
+            @change="handleChange"
+          ></el-cascader>
         </el-form-item>
 
         <el-form-item label="用户排序" :label-width="formLabelWidth">
-          <el-input v-model="form.userBlngOrgaDsplSeq" autocomplete="off" />
+          <el-input v-model="formTest.userBlngOrgaDsplSeq" autocomplete="off" />
         </el-form-item>
         <el-form-item label="职位" :label-width="formLabelWidth">
-          <el-input v-model="form.position" autocomplete="off" />
+          <el-input v-model="formTest.position" autocomplete="off" />
         </el-form-item>
         <el-form-item
           label="手机号码"
@@ -181,7 +184,7 @@
         {pattern:/^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/,message:'手机号码有误，请重新输入'}
         ]"
         >
-          <el-input v-model.number="form.phonenum" autocomplete="off" />
+          <el-input v-model.number="formTest.phonenum" autocomplete="off" />
         </el-form-item>
 
         <el-form-item
@@ -189,11 +192,11 @@
           prop="email"
           :label-width="formLabelWidth"
           :rules="[
-              { required: true, message: '电子邮箱不能为空'},
+           
               { type: 'email', message: '电子邮箱格式错误'}
             ]"
         >
-          <el-input v-model="form.email" autocomplete="off" />
+          <el-input v-model="formTest.email" autocomplete="off" />
         </el-form-item>
 
         <el-form-item
@@ -207,7 +210,7 @@
         >
           <el-input
             type="textarea"
-            v-model="form.description"
+            v-model="formTest.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             placeholder="暂无备注信息"
             autocomplete="off"
@@ -216,11 +219,50 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="reviseFromdata = false, cancel()" >取 消</el-button>
-        <el-button type="primary" @click="reviseFromdata = false ,reviseForm('form')">确 定</el-button>
+        <el-button type="primary" @click="reviseFromdata = false ,reviseForm('formTest')">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 表单 -->
+    <!-- 分配客户 -->
+    <el-dialog title="分配客户" :visible.sync="DistributionCustomers">
+        <el-button type="primary" round @click="keepCustomers">保存</el-button>
 
+        <el-tree
+        :data="customers"
+        show-checkbox
+        default-expand-all
+        node-key="id"
+        ref="tree"
+        highlight-current
+         @check-change="handleCheckChange"
+        :props="defaultProps">
+      </el-tree>
+    </el-dialog>
+    <!--  分配仓库-->
+    <el-dialog title="分配客户" :visible.sync="DistributionWarehouse">
+        <el-tree
+        :data="warehouse"
+        show-checkbox
+        default-expand-all
+        node-key="id"
+        ref="tree"
+        highlight-current
+        :props="defaultProps">
+      </el-tree>
+    </el-dialog>
+    <!--  分配角色-->
+    <el-dialog title="分配客户" :visible.sync="AssignmentRoles">
+        <el-button type="primary" @>保存</el-button>
+        <el-tree
+        :data="roles"
+        show-checkbox
+        default-expand-all
+        node-key="id"
+        ref="tree"
+        highlight-current
+        :props="defaultProps">
+      </el-tree>
+    </el-dialog>
+    <!-- 表单 -->
     <el-table
       ref="multipleTable"
       :data="tableData"
@@ -228,10 +270,9 @@
       height="500"
       tooltip-effect="dark"
       style="width: 100%"
-      @selection-change="handleSelectionChange"
-    >
+      @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
-      <el-table-column prop="loginame" label="登陆名称" width="120" />
+      <el-table-column prop="loginame" label="登录名称" width="120" />
       <el-table-column prop="username" label="用户名称" width="120" />
       <el-table-column prop="position" label="职位" width="120" />
       <el-table-column prop="orgAbr" label="部门" width="120" />
@@ -271,12 +312,17 @@
 
 <script>
 import { log } from "util";
+import { mapState } from 'vuex'
 export default {
   name: "Menu2",
   data() {
     return {
+      
+      //分配开启按钮
+      distribution:false,
       flager: false,
       searchName: "",
+      requerts: [],
       searchUser: "",
       id: "",
       //删除id
@@ -298,53 +344,15 @@ export default {
       reviseFromdata: false,
       dialogTableVisible: false,
       dialogFormVisible: false,
+      testName:'',
+      formTest:{},
       form: {
-        loginame: "",
-        orgAbr: "",
-        orgaId: "",
-        selectType: "",
-        orgaUserRelId: "",
-        id: "",
-        companyName: "",
-        userBlngOrgaDsplSeq: "",
-        username: "",
-        position: "",
-        phonenum: "",
-        email: "",
-        description: "",
-        isystem: "",
-        tenantId: "",
         
-        //  rules: {
-        //   loginame: [
-        //     { required: true, message: '登陆名称不能为空', trigger: 'blur' },
-        //     { max: 60, message: '长度不能大于60', trigger: 'blur' }
-        //   ],
-        //   companyName: [      
-        //     { required: true, message: '请选择所属公司', trigger: 'change' }
-        //   ],
-        //   username: [
-            
-        //       { max: 60, message: '长度不能大于60',trigger: 'blur' },
-        //     {required: true, message: '用户名称不能为空', trigger: 'blur' }
-        //   ],
-        //   phonenum: [
-           
-        //     {max: 11, message:'手机号码有误，请重新输入',trigger: 'blur'},
-        //     {pattern:'^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$',message: '手机号码格式错误', trigger: 'blur' },
-        //     {required: true, message: '手机号码不能为空', trigger: 'blur' }
-        //   ],
-        //   email: [
-            
-        //     { required: true, message: '电子邮箱不能为空', trigger: 'blur' },
-        //     { type: 'email', message: '电子邮箱格式错误', trigger: 'blur' }
-        //   ],
-        //   description: [
-        //     { max: 200, message: '输入过长，只允许输入200个字符', trigger: 'blur' }
-        //   ],
-          
-        // }
       },
+      props: {
+        value: "id",
+        label: "text",
+        children: "children"},
       formLabelWidth: "120px",
       // 第几页
       currentPage: 1,
@@ -352,13 +360,115 @@ export default {
       pageSize: 10,
       currentPage2: 1,
       //总页码数
-      total: null
+      total: null,
+      userCompanyName:'',
+      LoginName:'',
+      LoginId:'',
+      userId:'',
+      //分配客户
+      customers:[],
+      defaultProps: {
+          children: 'children',
+          label: 'text',
+          value:'attributes'
+        },
+        DistributionCustomers: false,
+        //分配仓库
+        warehouse:[],
+        props:{
+          children: 'children',
+          label: 'label'
+        },
+        DistributionWarehouse: false,
+        //分配角色
+        roles:[],
+        rolesProps:{
+          children: 'children',
+          label: 'label'
+        },
+        AssignmentRoles: false,
     };
   },
   created() {
     this.getInfo();
+     this.loginUser()
+     this.getOrganizationTree()
+     this.getCustomers()
+  },
+  computed:{
+    ...mapState(['user'])
   },
   methods: {
+    //点击分配客户的按钮
+    takeWarehouse(){
+      if(this.multipleSelection === ''){
+        this.$confirm("请选择一个用户！！！", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {}).catch(() => {});
+      }
+    },
+    //效验用户的新增状态
+    keepCustomers(id){
+      // this.$http.get(`/userBusiness/checkIsValueExist?type=UserCustomer&keyId=${}`)
+    },
+    //分配客户的复选框状态
+    handleCheckChange(data, checked, indeterminate) {
+      console.log('*****************');
+      
+      console.log(data);
+      console.log(checked);
+      console.log(indeterminate);
+      console.log('*****************');
+
+      // if (this.dataLink.length >= 2) {
+      //   this.flager = true;
+      // } else {
+      //   this.flager = false;
+      // }
+    },
+    //获取分配客户数据
+    getCustomers(){
+      this.$http.post('/supplier/findUserCustomer',{
+        UBType: 'UserCustomer',
+        UBKeyId: this.userId
+
+      }).then(res=>{
+        
+        this.customers = res.data.children
+      
+      })
+    },
+    //点击复选框选择。
+     handleChange(value) {
+      
+      this.form.orgParentNo = value[value.length-1];
+      
+    },
+    loginUser(){
+      this.userId = this.user.userInfo.id
+
+      
+      this.LoginName = this.user.userInfo.loginame
+
+      this.userCompanyName = this.user.userInfo.companyName
+      if(this.LoginName === 'admin') {
+        this.testName = false
+        this.$http.get('/tenant/tenantSelect').then(res=>{
+          this.userCompanyName = res.data
+          console.log(this.userCompanyName);
+          // console.log(res);    
+        })
+
+      }else {
+        this.testName = true
+        this.form.companyName = this.userCompanyName
+        this.LoginId = this.user.userInfo.tenantId
+       
+        
+      }
+    },
     cancel(){
       for(let i in this.form){
             this.form[i] = ''
@@ -366,7 +476,6 @@ export default {
     },
     //删除
     deleteUser(ids) {
-      console.log(ids);
 
       this.$http
         .post("/user/deleteUser", {
@@ -378,20 +487,29 @@ export default {
     },
     //多删
     deleteMoreUser() {
-      console.log("多选删除");
-
+      let Link 
       this.multipleSelection.forEach(element => {
         if (this.delMore.indexOf(element.id) < 0) {
           this.delMore.push(element.id);
         }
       });
-      this.$http
-        .post(`/user/deleteUser`, {
-          ids:[this.delMore]
-        })
-        .then(res => {
-          console.log(res);
-        });  
+        this.$confirm('确定删除选中的公司数据么？', "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(res => {
+          Link = this.delMore.join(',')
+          this.deleteUser(Link);
+          this.delMore = [];
+          this.$message({
+              type: "success",
+              message: "删除成功!"
+            });
+ 
+          }).catch(req => {
+
+          })
+      
     },
     open1() {
       this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
@@ -435,24 +553,14 @@ export default {
     },
     //修改
     handleEdit(index, row) {
-      
-      this.form.companyName = row.companyName;
-      this.form.description = row.description;
-      this.form.email = row.email;
-      this.form.id = row.id;
-      this.form.isystem = row.isystem;
-      this.form.loginame = row.loginame;
-      this.form.orgAbr = row.orgAbr;
-      this.form.orgaId = row.orgaId;
-      this.form.orgaUserRelId = row.orgaUserRelId;
-      this.form.phonenum = row.phonenum;
-      this.form.position = row.position;
-      this.form.tenantId = row.tenantId;
-      this.form.userBlngOrgaDsplSeq = row.userBlngOrgaDsplSeq;
-      this.form.username = row.username;
-      // console.log(this.form);
+      let obj = JSON.parse(JSON.stringify(row));
+      this.formTest = obj
       this.reviseData = true;
-      this.id = row.id;
+      this.id = obj.id;
+      console.log('=====');
+      
+      console.log(this.formTest);
+      
     },
     handleDelete(index, row) {
       // console.log(row.id);
@@ -469,16 +577,37 @@ export default {
         })
         .then(res => {
           this.tableData = res.data.page.rows;
+    
+          
+           
           
           
           this.total = Math.ceil(res.data.page.total / this.pageSize);
-          // console.log(this.tableData);
+        
         });
+    },
+    getOrganizationTree() {
+      
+      this.$http
+        .post("organization/getOrganizationTree", {
+          id: -1
+        })
+        .then(res => {
+          this.requert = res.data;
+
+          this.requerts = res.data;
+           console.log('******************');
+          console.log(this.requerts);
+          
+           console.log('******************');
+        })
+        .catch(req => {});
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
       this.displayDel();
-      console.log(111);
+      console.log(this.multipleSelection);
+      
     },
     handleSizeChange(val) {
       this.pageSize = val;
@@ -487,18 +616,25 @@ export default {
     },
     handleCurrentChange(val) {
       this.currentPage = val;
-      console.log('zhe');
+    
       this.getInfo()
-      console.log(this.currentPage);
       
     },
     //添加功能
     addAdmin() {
+      if(this.LoginName === 'admin'){
+      this.form.tenantId = this.form.companyName
+      }else {
+        this.form.tenantId = this.LoginId
+      }
+          this.form.orgaId = this.form.orgParentName[this.form.orgParentName.length -1 ]
+
       this.$http
         .post("/user/addUser", {
           info: this.form
         })
         .then(res => {
+          this.form = {}
           this.getInfo()
         });
     },
@@ -522,12 +658,18 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          alert("成功!");
+          this.$message({
+              type: "success",
+              message: "新增成功!"
+            }); 
           this.dialogFormVisible = false;
           this.addAdmin();
           
         } else {
-          alert("提交失败，格式错误!!");
+          this.$message({
+              type: "error",
+              message: "新增失败"
+            }); 
           return false;
         }
 
@@ -537,12 +679,24 @@ export default {
     reviseForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          alert("成功!");
+          this.$message({
+              type: "success",
+              message: "修改成功!"
+            }); 
           this.dialogFormVisible = false;
-          this.reviseUser(this.id, this.form);
+          if(this.LoginName === 'admin'){
+            this.form.tenantId = this.form.companyName
+            }else {
+              this.form.tenantId = this.LoginId
+            }
+          this.formTest.orgaId = this.formTest.orgParentName[this.formTest.orgParentName.length -1 ]
+          this.reviseUser(this.id, this.formTest);
           
         } else {
-          alert("提交失败，格式错误!!");
+          this.$message({
+              type: "error",
+              message: "修改失败"
+            });
           return false;
         }
       });
@@ -554,9 +708,9 @@ export default {
           info
         })
         .then(res => {
-          for (let key in info) {
-            info[key] = "";
-          }
+          // for (let key in info) {
+          //   info[key] = "";
+          // }
           this.getInfo();
         });
     }

@@ -10,7 +10,7 @@
         <el-button type="primary" @click="getInfo(companyname)">查询</el-button>
         <el-button type="primary" @click="moveNull">重置</el-button>
         <el-button type="primary" @click="xiuFormVisible = true">新增</el-button>
-        <el-button type="primary" @click="deleteMoreUser()" v-show="flager">删除</el-button>
+        <el-button type="danger" @click="deleteMoreUser()" v-show="flager">删除</el-button>
       </el-form-item>
     </el-form>
     <!-- 新增公司页面 -->
@@ -112,7 +112,7 @@
               <el-time-picker
                 type="fixed-time"
                 placeholder="选择时间"
-                value-format="HH:MM:dd"
+                value-format="HH:mm:ss"
                 v-model="form.date2"
                 style="width: 100%;"
               ></el-time-picker>
@@ -226,7 +226,7 @@
                 type="date"
                 value-format="yyyy-MM-dd"
                 placeholder="选择日期"
-                v-model="ruleForm.data1"
+                v-model="ruleForm.date1"
                 style="width: 100%;"
               ></el-date-picker>
             </el-form-item>
@@ -288,11 +288,23 @@
       <el-table-column prop="companyFax" label="公司传真" width="120" />
       <el-table-column prop="companyPostCode" label="公司邮编" width="120" />
       <el-table-column prop="expiresTime" label="服务结束时间" width="120" />
-      <el-table-column prop="status" label="启用" width="55">
-        <el-checkbox  @change="Enable"></el-checkbox>
+      <!-- <el-table-column prop="statue" label="启用" width="120">
+        <template slot-scope="scope">
+        <el-checkbox  v-model="scope.row.statue">
+        123
+        </el-checkbox>
+        </template>
+      </el-table-column> -->
+      <el-table-column prop="statue" label="启用" align="center">
+        <template slot-scope="scope">
+        <!-- <el-checkbox :model="scope.row.statue == 2 ? true : false"></el-checkbox>
+        {{scope.row.statue == 1 ? 'true' : 'false'}} -->
+        <el-checkbox  @change="changeCheckbox(scope.row)" :checked="scope.row.statue == 1 ? true : false"></el-checkbox>
+        </template>
+        
       </el-table-column>
 
-      <el-table-column prop="address" label="操作" show-overflow-tooltip fixed="right">
+      <el-table-column prop="address" label="操作" show-overflow-tooltip >
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -370,6 +382,7 @@ export default {
         data2: "",
         expireTime: ""
       },
+      checked:'',
       // 公司依赖项
       companyList:[],
       formLabelWidth: "120px",
@@ -386,8 +399,19 @@ export default {
   },
   methods: {
     //启用状态
-    Enable(e){
-      console.log(e);
+    changeCheckbox(e){
+      
+      e.statue = e.statue == 1 ? 2 : 1;
+      console.log(e)
+      this.$http.post('/tenant/updateTenantStatus',{
+        info:{
+          id:e.id,
+          status:e.statue
+        }
+      }).then(res=>{
+        console.log(res);
+        
+      })
       
     },
     //新增
@@ -405,7 +429,6 @@ export default {
       });
       //提交
       this.form.expireTime = this.form.data1 + " " + this.form.date2;
-      // console.log(this.form.expireTime);
       this.$http
         .post("/tenant/addTenant", {
           info: {
@@ -422,6 +445,7 @@ export default {
           }
         })
         .then(res => {
+          this.flage = false
           this.getInfo()
           for (let key in this.form) {
             this.form[key] = "";
@@ -437,7 +461,9 @@ export default {
           this.$message({
             type: "success",
             message: "修改成功!"
+            
           });
+          this.getInfo()
         } else {
           // console.log("error submit!!");
           return false;
@@ -445,7 +471,7 @@ export default {
       });
       //提交
       this.ruleForm.expireTime =
-        this.ruleForm.data1 + " " + this.ruleForm.date2;
+        this.ruleForm.date1 + " " + this.ruleForm.date2;
       // console.log(this.ruleForm.expireTime);
       
       this.$http
@@ -458,7 +484,7 @@ export default {
             companyAddress: this.ruleForm.companyAddress,
             companyPostCode: this.ruleForm.companyPostCode,
             expireTime: this.ruleForm.expireTime,
-            status: this.ruleForm.status,
+            status: this.ruleForm.statue,
             id: this.ruleForm.id,
             tenantId:this.ruleForm.tenantId,
             expireTime: this.ruleForm.expireTime
@@ -470,24 +496,28 @@ export default {
     },
     //校验当前租户是否已有单据
    IsDependenced(ids){
+     if(ids.length > 1) {
+       ids = ids.join(',')
+     }
+     
      this.$http.post('/tenant/checkTenantIsDependenced',{
        ids
      }).then(res=>{
-        this.companyList = res.data.companyList
-        
-      if(res.code === 200) {
+      if(res.data.code === 200) {
           this.$confirm('确定删除选中的公司数据么？', "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
-        }).then(() => {
-            this.deleteUser(this.delId);
-            this.$message({
+        }).then(res => {
+          
+          this.$message({
               type: "success",
               message: "删除成功!"
             });
-          })
-          .catch(() => {
+            this.deleteUser(ids);  
+          }).catch(req => {
+
+            
             this.$message({
               type: "info",
               message: "已取消删除"
@@ -495,14 +525,14 @@ export default {
           });
        }else {
          this.companyList = res.data.companyList
+         console.log(this.companyList);
          
-         
-         this.$confirm(`检测到选中的公司${this.companyList}中存在依赖数据，确定强制删除？`, "提示", {
+         this.$confirm(`检测到选中的公司"${this.companyList}"中存在依赖数据，确定强制删除？`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         }).then(() => {
-            this.deleteUser(this.delId);
+            this.deleteUser(ids);
             this.$message({
               type: "success",
               message: "删除成功!"
@@ -517,14 +547,20 @@ export default {
        }
      
        
+     }).catch(req=>{
+       console.log(req);
+       console.log(111);
+       
      })
    },
-    handleEdit(index, row) {
- 
-      
+    handleEdit(index, row) {  
       this.ruleForm = row;
-      console.log(this.ruleForm);
+
       
+      
+      this.ruleForm.date1 = this.ruleForm.expiresTime.slice(0,9)
+      this.ruleForm.date2 = this.ruleForm.expiresTime.slice(9).trim()
+  
     },
     handleDelete(index, row) {
       this.delId = row.tenantId;
@@ -534,6 +570,10 @@ export default {
     },
     //删除
     deleteUser(id) {
+      // if(id.)
+      // id = id.join(",")
+
+      
       this.$http
         .get('/tenant/deleteTenant/',{
           ids : id 
@@ -555,11 +595,11 @@ export default {
     deleteMoreUser() {
 
       this.multipleSelection.forEach(element => {
-        if (this.delMore.indexOf(element.id) < 0) {
-          this.delMore.push(element.id);
+        if (this.delMore.indexOf(element.tenantId) < 0) {
+          this.delMore.push(element.tenantId);
         }
       });
-
+      
       this.IsDependenced(this.delMore)
 
     },
@@ -579,7 +619,16 @@ export default {
         .then(res => {
           this.tableData = res.data.rows;
           this.total = Math.ceil(res.data.total / this.pageSize);
+          
+          for(let key in this.tableData){
+            this.tableData[key].expiresTime = this.$method.getSTime2(this.tableData[key].expiresTime)
+           
+          }
+          console.log('=======');
+          
           console.log(this.tableData);
+          
+
         });
     },
     handleSelectionChange(val) {

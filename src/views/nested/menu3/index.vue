@@ -25,12 +25,19 @@
         <el-form-item
           label="公司名称"
           prop="companyName"
-         
           :label-width="formLabelWidth"
+          :rules="[
+              { required: true, message: '请选择公司名称'}
+            ]"
         >
-          <el-select placeholder="请选择状态" :disabled="testName" v-model="form.companyName">
-            <el-option label="未营业" value="1"></el-option>
-            <el-option label="正常营业" value="2"></el-option>
+          <el-select no-data-text="请选择公司名称" :disabled="testName" v-model="form.companyName">
+            <el-option
+              v-for="item in this.userCompanyName"
+              :key="item.tenantId"
+              :label="item.companyName"
+              size="mini"
+              :value="item.tenantId">
+            </el-option>
           </el-select>
         </el-form-item>
 
@@ -150,11 +157,12 @@
               { required: true, message: '请选择公司名称'}
             ]"
         >
-          <el-select placeholder="请选择公司名称" :disabled="testName" v-model="editId.companyName">
+          <el-select no-data-text="请选择公司名称" :disabled="testName" v-model="editId.companyName">
             <el-option
               v-for="item in this.userCompanyName"
               :key="item.tenantId"
               :label="item.companyName"
+              size="mini"
               :value="item.tenantId">
             </el-option>
           </el-select>
@@ -165,6 +173,7 @@
             :options="requerts"
             :props="props"
             :show-all-levels="false"
+            change-on-select
             v-model="editId.orgParentName"
             @change="handleChange"
           ></el-cascader>
@@ -345,6 +354,7 @@ export default {
           // });
           this.userCompanyName = res.data
           console.log(this.userCompanyName);
+          console.log(res);
           
           
           
@@ -371,16 +381,18 @@ export default {
       })
         .then(() => {
           this.flagers = false;
+          let Link
+          Link = this.dataLink.join(",")
           this.$http
             .post("/organization/batchDeleteOrganization", {
-              ids: this.dataLink
+              ids: Link
             })
             .then(res => {
               this.getOrganizationTree();
             });
           this.$message({
             type: "success",
-            message: "新增成功!"
+            message: "删除成功!"
           });
         })
         .catch(() => {
@@ -388,7 +400,7 @@ export default {
 
           this.$message({
             type: "info",
-            message: "已取消新增"
+            message: "已取消删除"
           });
         });
     },
@@ -418,16 +430,19 @@ export default {
             type: "success",
             message: "添加成功!"
           });
-           console.log( this.form.orgParentNo);
-
+          this.editId.tenantId = this.editId.companyName
           this.$http
             .post("/organization/addOrganization", {
               info: this.form
             })
             .then(res => {
-              for (let key in this.form) {
-                this.form[key] = "";
-              }
+              // for (let key in this.form) {
+              //   this.form[key] = "";
+              // }
+              this.form={}
+              
+              
+              this.dialogFormVisible = false
               this.getOrganizationTree();
             });
         } else {
@@ -444,7 +459,10 @@ export default {
        id:this.editID
      }).then(res=>{
        this.editId = res.data
-      this.editId.companyName = this.userCompanyName
+      // this.editId.companyName = this.userCompanyName[0]
+      // this.editId.orgCreateTime
+
+      
        this.logFormVisible = true;
      })
       
@@ -459,7 +477,7 @@ export default {
           });
           // this.editId.orgParentNo = this.editId.attributes
       
-
+          this.editId.tenantId = this.editId.companyName
           this.$http.post("/organization/editOrganization", {
               info: this.editId
             })
@@ -468,6 +486,7 @@ export default {
                 this.editId[key] = "";
               }
               this.getOrganizationTree();
+              this.logFormVisible = false
             });
         } else {
           console.log("error submit!!");
