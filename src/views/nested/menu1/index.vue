@@ -401,13 +401,25 @@ export default {
   methods: {
     //点击分配客户的按钮
     takeWarehouse(){
-      if(this.multipleSelection === ''){
-        this.$confirm("请选择一个用户！！！", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      }).then(() => {}).catch(() => {});
-      }
+      console.log(this.multipleSelection);
+      
+      // if(this.multipleSelection === ''){
+      //   this.$confirm("请选择一个用户！！！", "提示", {
+      //   confirmButtonText: "确定",
+      //   cancelButtonText: "取消",
+      //   type: "warning"
+      // }).then(() => {}).catch(() => {});
+      // }else{
+      //   if(this.multipleSelection.length > 1){
+      //     this.$confirm("只能选择一个用户！！！", "提示", {
+      //       confirmButtonText: "确定",
+      //       cancelButtonText: "取消",
+      //       type: "warning"
+      // }).then(() => {}).catch(() => {});
+      //   }else{
+      //     this.distribution = true;
+      //   }
+      // }
     },
     //效验用户的新增状态
     keepCustomers(id){

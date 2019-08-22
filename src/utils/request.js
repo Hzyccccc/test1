@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
-import { getUser } from '@/utils/auth'
+import { setUser,getUser } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
@@ -19,6 +19,7 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
   config => {
+    console.log(config)
     if (config.type) {
       if (config.type === 'encodeURIPost') {
         config.transformRequest = [function(data) {
@@ -36,8 +37,12 @@ service.interceptors.request.use(
         }
       }
     }
+    console.log('------')
+    console.log(store.getters.userInfo)
+    console.log(getUser() ? JSON.parse(getUser()).token : '')
+    console.log('------')
     if (store.getters.userInfo) {
-      config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).userId : ''
+      config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).token : ''
     }
     console.log(config)
     return config
@@ -54,8 +59,9 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
+    return res
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 200) {
+    /*if (res.code !== 200) {
       Message({
         message: res.message || 'Error',
         type: 'error',
@@ -78,7 +84,7 @@ service.interceptors.response.use(
       return Promise.reject(new Error(res.message || 'Error'))
     } else {
       return res
-    }
+    }*/
   },
   error => {
     console.log(error.code)
