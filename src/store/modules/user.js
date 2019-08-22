@@ -2,12 +2,11 @@ import { login, logout } from '@/api/user'
 import { getUser, setUser, removeUser } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
-console.log('getUser()');
-console.log(getUser());
+console.log('getUser-------')
+console.log(getUser())
 const state = {
-  userInfo: getUser() ? JSON.parse(getUser()) : ''// 用户信息
+  userInfo: getUser() ? getUser() : ''// 用户信息
 }
-console.log(state.userInfo)
 
 const mutations = {
   SET_USER_INFO: (state, userInfo) => {
@@ -20,9 +19,10 @@ const actions = {
   login({ commit }, userInfo) {
     const { loginame, password } = userInfo
     return new Promise((resolve, reject) => {
+
       login({ loginame: loginame, password: password }).then(response => {
-        const data = response.data.user
-        console.log(data);
+        const data = response.data
+        console.log(data)
         commit('SET_USER_INFO', data)
         setUser(data)
         resolve()

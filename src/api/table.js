@@ -1,18 +1,4 @@
 import request from '@/utils/request'
-import axios from 'axios'
-
-// create an axios instance
-const service = axios.create({
-  // baseURL: 'http://172.10.0.96:8019', // url = base url + request url
-  // baseURL: 'http://172.10.0.130:8019', //杜远天本地
-  baseURL: 'http://172.10.0.26:8019', //周武本地
-
-  timeout: 60000, // request timeout
-  // withCredentials: true,
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  }
-})
 
 export function getUserList(params) {
   return request({

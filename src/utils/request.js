@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
-import { setUser,getUser } from '@/utils/auth'
+import { setUser, getUser } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
@@ -39,10 +39,10 @@ service.interceptors.request.use(
     }
     console.log('------')
     console.log(store.getters.userInfo)
-    console.log(getUser() ? JSON.parse(getUser()).token : '')
+    console.log(getUser() ? getUser().token : '')
     console.log('------')
     if (store.getters.userInfo) {
-      config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).token : ''
+      config.headers['X-Token'] = getUser() ? getUser().user.token : ''
     }
     console.log(config)
     return config
@@ -58,8 +58,11 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   response => {
-    const res = response.data
-    return res
+    if (response.data) {
+      return response.data
+    } else {
+      return response
+    }
     // if the custom code is not 20000, it is judged as an error.
     /*if (res.code !== 200) {
       Message({
@@ -89,7 +92,7 @@ service.interceptors.response.use(
   error => {
     console.log(error.code)
 
-    if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1) {
+   /* if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1) {
       Message.error({ message: '请求超时!' })
     } else {
       if (error.response.status === 504 || error.response.status === 404) {
@@ -105,7 +108,7 @@ service.interceptors.response.use(
           Message.error({ message: '未知错误!' })
         }
       }
-    }
+    }*/
     return Promise.reject(error)
   }
 )

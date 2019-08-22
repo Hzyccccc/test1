@@ -1,13 +1,18 @@
 import Cookies from 'js-cookie'
 
-const InfoKey = 'city_sale_userInfo'
+const InfoKey = 'jxcLoginInfo'
 
 export function getUser() {
-  return Cookies.get(InfoKey)
+  if (Cookies.get(InfoKey)) {
+    return JSON.parse(Cookies.get(InfoKey))
+  } else {
+    return Cookies.get(InfoKey)
+  }
+
 }
 
 export function setUser(data) {
-  return Cookies.set(InfoKey, data)
+  return Cookies.set(InfoKey, JSON.stringify(data))
 }
 
 export function removeUser() {

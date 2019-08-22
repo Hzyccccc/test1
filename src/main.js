@@ -5,7 +5,6 @@ import 'normalize.css/normalize.css' // 重置样式
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/zh-CN' // lang i18n
-import auth from './utils/auth' // 从cookie获取令牌
 
 import '@/styles/index.scss' // 全局样式
 
@@ -27,7 +26,6 @@ Vue.use(ElementUI, { locale })
 import md5 from 'js-md5'
 
 Vue.prototype.$md5 = md5
-Vue.prototype.$auth = auth
 Vue.prototype.$method = method
 
 Vue.config.productionTip = false
