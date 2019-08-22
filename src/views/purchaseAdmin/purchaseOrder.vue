@@ -54,7 +54,7 @@
                   >
                   <template slot-scope="scope">
                       <el-button type="text" @click="seeDetails(scope.row)">查看</el-button>
-                      <el-button type="text">编辑</el-button>
+                      <el-button type="text" @click="editDetails(scope.row)">编辑</el-button>
                       <el-button type="text" @click="tableInfo[0]=scope.row;batchRemove();">删除</el-button>
                       <el-button type="text">转采购入库</el-button>
                    </template>
@@ -88,9 +88,9 @@
                   prop="status"
                   label="状态">
                    <template slot-scope="scope">
-                      <span v-if="scope.row.status == 0">未审核</span>
-                      <span v-if="scope.row.status == 1">已审核</span>
-                      <span v-if="scope.row.status == 2">已转采购</span>
+                      <span style="color:red;" v-if="scope.row.status == 0">未审核</span>
+                      <span style="color:green;" v-if="scope.row.status == 1">已审核</span>
+                      <span style="color:blur;" v-if="scope.row.status == 2">已转采购</span>
                    </template>
                 </el-table-column>
               </el-table>
@@ -145,14 +145,36 @@ export default {
   methods: {
     seeDetails(item) {
       console.log(item);
-      // this.$router.push({path:'addOrderInfo',params:{id:item.id,type:'1'}})
-      //  this.$router.push({
-      //     name: 'addOrderInfo',
-      //     query: {
-      //       id: item.id,
-      //     }
-      //   })
-        this.$router.push({path: '/workbench/contract',query: {type:'1',id:row.id}})
+        this.$router.push({
+            path: 'addOrderInfo',
+            query: {
+              page:'order',
+              type:'1',
+              id:item.id,
+              defaultnumber:item.defaultnumber,
+              opertimeStr:item.opertimeStr,
+              organid:item.organid,
+              remark:item.remark
+              }
+          })
+    },
+    editDetails(item) {
+      if(item.status == 1 || item.status == 2) {
+         this.$message.error('已审核和已转采购的单据不能修改');
+        return;
+      }
+      this.$router.push({
+        path: 'addOrderInfo',
+        query: {
+          page:'order',
+          type:'2',
+          id:item.id,
+          defaultnumber:item.defaultnumber,
+          opertimeStr:item.opertimeStr,
+          organid:item.organid,
+          remark:item.remark
+          }
+      })
     },
      /*查询用户仓库*/
       async seeUserWarehouse() {
@@ -295,7 +317,7 @@ export default {
               }
           })
           if(noApi) {
-             this.$message.error('已审核和已转的单据不能删除!');
+             this.$message.error('选中的订单中有已审核或者已转采购状态的订单,请重新选择!');
              return;
           }
           this.$confirm('确定要删除选中的单据吗?', '提示', {
@@ -333,7 +355,7 @@ export default {
         })
       },
       add() {
-        this.$router.push({path:'addOrderInfo'});
+        this.$router.push({path:'addOrderInfo',query:{page:'order'}});
       },
       reset() {
         this.pageNum = 1;

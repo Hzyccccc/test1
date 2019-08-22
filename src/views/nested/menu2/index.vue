@@ -11,7 +11,7 @@
         <el-button type="primary">分配功能</el-button>
         <el-button type="primary">分配按钮</el-button>
         <el-button type="primary" @click="logFormVisible = true">新增</el-button>
-        <el-button v-show="bFlag" type="primary" @click="deleteMoreUser">删除</el-button>
+        <el-button v-show="bFlag" type="danger" @click="deleteMoreUser">删除</el-button>
       </el-form-item>
     </el-form>
   <!--  修改角色-->
@@ -221,26 +221,17 @@ export default {
       this.userName = ''
     },
     deleteUser(ids) {
-      console.log('=======');
-      
-      console.log(ids);
-      
       this.$http.post("/role/batchDeleteRoleByIds", {
-          ids:ids
-          
-        })
-        .then(res => {
-          console.log('111==');
-          
-          console.log(ids);
-          
-          this.getInfo()
-       });
+          ids:ids 
+          }).then(res => {
+            this.getInfo()
+        });
     },
     //多删
     deleteMoreUser() {
       
-  
+      let Link 
+      
       this.multipleSelection.forEach(element => {
         if (this.delMore.indexOf(element.id) < 0) {
           this.delMore.push(element.id);
@@ -248,9 +239,22 @@ export default {
       
         }
       });
-      console.log(this.delMore)
-      this.deleteUser(this.delMore);
-      this.delMore = [];
+        this.$confirm('确定删除选中的公司数据么？', "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(res => {
+          Link = this.delMore.join(',')
+          this.deleteUser(Link);
+          this.delMore = [];
+          this.$message({
+              type: "success",
+              message: "删除成功!"
+            }); 
+          }).catch(req => {
+
+          })
+      
     },
     open2() {
       this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {

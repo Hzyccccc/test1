@@ -184,8 +184,36 @@ export default {
   getSTime1(val) {
     let date = new Date(Date.parse(val))
     return date.getFullYear() + '-' + (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate())
+  },
+  getSTime2(val) {
+    let d = new Date(Date.parse(val));
+    let hour = d.getHours() < 10 ? '0'+ d.getHours() : d.getHours();
+    let Minute = d.getMinutes() < 10 ? '0'+ d.getMinutes() : d.getMinutes();
+    let second = d.getSeconds() < 10 ? '0'+ d.getSeconds() : d.getSeconds();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + hour + ':' + Minute + ':' + second;
+    }
+,
+  /* len保留的长度*/
+  /**
+   * @param {string} str
+   * @param {Number} len
+   * @returns {String}
+   */
+  beautySub(str, len){
+    if (!str) {
+      return ''
+    }
+    let str1 = str + ''
+    let reg = /[\u4e00-\u9fa5]/g,    //专业匹配中文
+      slice = str1.substring(0, len),
+      chineseCharNum = (~~(slice.match(reg) && slice.match(reg).length)),
+      realen = slice.length * 2 - chineseCharNum;
+    return str1.substr(0, realen) + (realen < str1.length ? "..." : "")
   }
 }
+
+
+
 
 
 

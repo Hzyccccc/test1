@@ -3,7 +3,7 @@
     <div class="serach-wrap">
       <el-form class="titForm" ref="form" v-model="searchForm" label-width="100px" size="medium">
         <el-form-item label="供应商：" >
-          <el-select v-model="supplierId" filterable placeholder="请选择">
+          <el-select :disabled="typeStatus == 1" v-model="supplierId" filterable placeholder="请选择">
             <el-option
               v-for="item in supplierList"
               :key="item.id"
@@ -12,18 +12,21 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-button type="text" style="margin-left:15px;" @click="addSupplierInfoDialog=true;">添加供应商</el-button>
+        <el-button type="text" style="margin-left:15px;" @click="addSupplierInfoDialog=true;" v-if="typeStatus != 1">添加供应商</el-button>
         <el-form-item label="单据日期：" :title="searchForm.contactName">
-          <el-date-picker v-model="value1" type="datetime" placeholder="选择日期时间"></el-date-picker>
+          <el-date-picker :disabled="typeStatus == 1" v-model="dataPicker" type="datetime" placeholder="选择日期时间"></el-date-picker>
         </el-form-item>
         <el-form-item label="单据编号：" :title="oderNumber">
           <el-input v-model="oderNumber" :disabled="true" placeholder="单据编号"></el-input>
         </el-form-item>
+         <el-form-item label="关联订单：" :title="linknumber">
+          <el-input v-model="linknumber" :disabled="true" placeholder="关联订单"></el-input>
+        </el-form-item>
       </el-form>
     </div>
     <div class="operation">
-      <el-button type="primary" @click="add">增加</el-button>
-      <el-button type="primary">删除</el-button>
+      <el-button type="primary" @click="add" v-if="typeStatus != 1">增加</el-button>
+      <el-button type="primary" v-if="typeStatus != 1" @click="remove">删除</el-button>
     </div>
     <div class="table">
       <el-table
@@ -35,21 +38,63 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="55"></el-table-column>
+        <el-table-column v-if="typeStatus != 1" prop="date" label="操作" width="55">
+            <template slot-scope="scope">
+              <el-button type="text" @click="editDetails(scope.row,scope.$index)">编辑</el-button>
+            </template>
+        </el-table-column>
         <el-table-column prop="DepotName" label="仓库名称"></el-table-column>
-        <el-table-column prop="MaterialName" label="品名(型号)(扩展信息)(单位) "></el-table-column>
+        <el-table-column prop="MaterialName" label="品名(型号)(扩展信息)(单位) " width="210">
+          <template slot-scope="scope">
+            <span
+              v-if="scope.row.MaterialName && scope.row.MaterialName.length<=10">{{scope.row.MaterialName}}</span>
+            <el-popover
+              v-else
+              placement="bottom"
+              trigger="hover"
+              :content="scope.row.MaterialName?scope.row.MaterialName:'--'">
+              <span slot="reference">{{$method.beautySub(scope.row.MaterialName,10)}}</span>
+            </el-popover>
+          </template>
+        </el-table-column>
         <el-table-column prop="Stock" label="库存"></el-table-column>
         <el-table-column prop="Unit" label="单位"></el-table-column>
         <el-table-column prop="OperNumber" label="数量"></el-table-column>
         <el-table-column prop="UnitPrice" label="单价"></el-table-column>
-        <el-table-column prop="AllPrice" label="金额"></el-table-column>
+        <el-table-column prop="TaxUnitPrice" label="含税单价"  v-if="pageName == 'rk'"  >
+          <template slot-scope="scope">
+              {{scope.row.TaxUnitPrice ? scope.row.TaxUnitPrice :0}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="AllPrice" label="金额">
+          <template slot-scope="scope">
+              {{scope.row.AllPrice ? scope.row.AllPrice :0}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="TaxRate" label="税率"  v-if="pageName == 'rk'">
+           <template slot-scope="scope">
+              {{scope.row.TaxRate ? scope.row.TaxRate :0}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="TaxMoney" label="税额"  v-if="pageName == 'rk'">
+           <template slot-scope="scope">
+              {{scope.row.TaxMoney ? scope.row.TaxMoney :0}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="TaxLastMoney" label="价税合计"  v-if="pageName == 'rk'">
+          <template slot-scope="scope">
+              {{scope.row.TaxLastMoney ? scope.row.TaxLastMoney :0}}
+          </template>
+        </el-table-column>
         <el-table-column prop="Remark" label="备注"></el-table-column>
       </el-table>
     </div>
     <div class="remarks">
-      <el-input type="textarea" placeholder="请输入内容" resize="none" v-model="remarks"></el-input>
+      <el-input v-if="typeStatus != 1"  type="textarea" placeholder="请输入内容" resize="none" v-model="remarks"></el-input>
+      <div style="margin-left:20px;" v-if="typeStatus == 1">单据备注: {{remarks}}</div>
     </div>
     <!-- 产品参数相关 -->
-    <div class="parameter-wrapper" v-if="false">
+    <div class="parameter-wrapper" v-if="pageName != 'order'">
         <el-form
           :rules="oderules"
           ref="form"
@@ -57,36 +102,47 @@
           label-width="110px"
           size="medium"
         >
-            <el-form-item label="优惠率：" :title="searchForm.contactName" prop="contactName">
-              <el-input v-model="searchForm.contactName" placeholder="库存"></el-input>
+            <el-form-item label="优惠率：" class="youhuiForm"  prop="contactName">
+              <el-input v-model="Discount" placeholder="库存"></el-input>
+              <span class="fuhao">%</span>
             </el-form-item>
-            <el-form-item label="退款优惠：" :title="searchForm.contactName" prop="contactName">
-              <el-input v-model="searchForm.contactName" placeholder="库存"></el-input>
+            <el-form-item label="退款优惠：">
+              <el-input style="display:inline-block;" v-model="DiscountMoney" placeholder="库存"></el-input>
             </el-form-item>
-            <el-form-item label="优惠后金额：" :title="searchForm.contactName" prop="contactName">
-              <el-input v-model="searchForm.contactName" placeholder="库存"></el-input>
+            <el-form-item label="优惠后金额："  >
+              <el-input :disabled="true" v-model="DiscountLastMoney" placeholder="库存"></el-input>
             </el-form-item>
-            <el-form-item label="本次退款：" :title="searchForm.contactName" prop="contactName">
-              <el-input v-model="searchForm.contactName" placeholder="库存"></el-input>
+            <el-form-item label="本次退款："  >
+              <el-input v-model="Changeamount" placeholder="库存"></el-input>
             </el-form-item>
-            <el-form-item label="结算账户：" :title="searchForm.contactName" prop="contactName">
-              <el-input v-model="searchForm.contactName" placeholder="库存"></el-input>
+            <el-form-item label="结算账户：">
+               <el-select  v-model="Accountid"  filterable placeholder="请选择">
+                  <el-option
+                    v-for="item in userAccountList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  ></el-option>
+                </el-select>
+              <!-- userAccountList -->
             </el-form-item>
-            <el-form-item label="本次欠款：" :title="searchForm.contactName" prop="contactName">
-              <el-input v-model="searchForm.contactName" placeholder="库存"></el-input>
+            　
+            <el-form-item label="本次欠款：" >
+              <el-input :disabled="true" v-model="Arrears" placeholder="库存"></el-input>
             </el-form-item>
-            <el-form-item label="采购费用："  :title="searchForm.contactName" prop="contactName">
-              <el-input :disabled="true" v-model="searchForm.contactName" placeholder="库存"></el-input>
+            <el-form-item label="采购费用：">
+              <el-input :disabled="true" v-model="OtherMoney" placeholder="库存"></el-input>
             </el-form-item>
             <span class="icon iconwenjian"></span>
         </el-form>
     </div>
     <div class="btn">
-      <el-button type="primary" @click="save">保存</el-button>
-      <el-button>取消</el-button>
+      <el-button type="primary" @click="save" v-if="typeStatus == 0">保存</el-button>
+      <el-button type="primary" @click="editSave" v-if="typeStatus == 2">保存</el-button>
+      <el-button @click="$router.back(-1)">取消</el-button>
     </div>
     <!-- 新增一条数据弹框 -->
-    <el-dialog class="oderDialog" title="新增订单信息" :visible.sync="oderDialogVisible">
+    <el-dialog class="oderDialog" title="新增订单信息" :close-on-click-modal="false" :visible.sync="oderDialogVisible">
       <div class="wrap">
         <el-form
           :rules="oderules"
@@ -144,10 +200,25 @@
               <el-input v-model="oderForm.UnitPrice" placeholder></el-input>
             </el-form-item>
           </div>
-
           <el-form-item label="金额：" :title="oderForm.AllPrice" prop="AllPrice">
             <el-input v-model="oderForm.AllPrice" placeholder="金额"></el-input>
           </el-form-item>
+          <div class="form_item" v-if="pageName=='rk'">
+            <el-form-item label="含税单价：" :title="oderForm.TaxUnitPrice" prop="TaxUnitPrice">
+              <el-input v-model="oderForm.TaxUnitPrice" placeholder="含税单价"></el-input>
+            </el-form-item>
+            <el-form-item label="税率(%)：" :title="oderForm.TaxRate" prop="TaxRate">
+              <el-input v-model="oderForm.TaxRate" placeholder="税率"></el-input>
+            </el-form-item>
+          </div>
+          <div class="form_item" v-if="pageName=='rk'">
+            <el-form-item label="税额：" :title="oderForm.TaxUnitPrice" prop="TaxUnitPrice">
+              <el-input v-model="oderForm.TaxUnitPrice" placeholder="税额"></el-input>
+            </el-form-item>
+            <el-form-item label="税价合计：" :title="oderForm.TaxRate" prop="TaxRate">
+              <el-input v-model="oderForm.TaxRate" placeholder="税价合计"></el-input>
+            </el-form-item>
+          </div>
           <el-form-item label="备注：" :title="oderForm.Remark" prop="Remark">
             <el-input type="textarea" v-model="oderForm.Remark" placeholder="备注"></el-input>
           </el-form-item>
@@ -159,7 +230,7 @@
       </span>
     </el-dialog>
     <!-- 添加供应商弹框 -->
-    <el-dialog class="addSupplierInfo" title="增加供应商信息" :visible.sync="addSupplierInfoDialog">
+    <el-dialog class="addSupplierInfo" :close-on-click-modal="false" title="增加供应商信息" :visible.sync="addSupplierInfoDialog">
       <div class="wrap">
         <el-form
           :rules="oderules"
@@ -233,17 +304,13 @@
 </template>
 <script>
 import {mapState} from 'vuex'
+import { log } from 'util';
 export default {
   data() {
     return {
       supplierId:'',  //供应商id
 
-      options: [
-        {
-          value: "选项1",
-          label: "黄金糕"
-        }
-      ],
+      dataPicker:new Date,
       searchForm: {
         contactName: "1"
       },
@@ -261,8 +328,9 @@ export default {
         AllPrice:'',
         Remark:'',
 
+
         TaxUnitPrice:'0.00',
-        TaxRate:"5",
+        TaxRate:"0",
         TaxMoney:"0.00",
         TaxLastMoney:"0.00",
         OtherField1:"",
@@ -303,39 +371,81 @@ export default {
       addSupplierInfoDialog:false,
 
       oderNumber:'',   //订单编号
+      linknumber:'',   //关联订单
       supplierList:[], //供应商list
       commodityList:[],//商品名list
       warehouseList:[],//仓库list
+
+      userAccountList:[], //用户账户
 
       stockInfo:{},
       unitList:[],
       price:0,  //金额
       oderPrice:0, //合计金额
+      TaxLastMoney:0, //价税合计
 
+      typeStatus:0,  //0 = 新增, 1 = 查看, 2 = 编辑
+      OderSaveStatus:0, //0 = 新增,1 = 编辑
+      currentIndex:0,  //编辑选中索引
+      preTotalPrice:0, //之前总价
+      pageName:'',    //页面跳转字段,用于判断从哪个页面跳转过来的
+
+      /*备注下面的相关字段 */
+      Discount: 0,            //优惠率
+      DiscountMoney:0,        //付款优惠
+      DiscountLastMoney:0,    //优惠后金额
+      Changeamount:0,         //付款
+      Accountid:'',            //账户ID
+      Arrears:0,              //欠款
+      OtherMoney:'',           //采购费用
+      OtherMoneyList:'',       //多支出, id组成的字符串用逗号分隔
     };
   },
   computed: {
-  
     ...mapState(['user'])
   },
   created() {
     console.log('this.$route.params')
-    console.log(this.$route)
-    /*订单编号*/
-    this.seeOderNumber();
+    console.log(this.$route.query)
+    
+    this.pageName = this.$route.query.page; //上一个页面参数
+    this.linknumber = this.$route.query.linknumber ? this.$route.query.linknumber : ''; //关联订单字段
+
+    if(this.$route.query.type != 1) {
+       /*仓库选择下拉框查询接口*/
+      this.warehouseSelect();
+      /*商品名选择下拉框查询接口*/
+      this.commoditySelect();
+    }
     /*供应商选择下拉框查询接口*/
     this.supplierSelect();
-    /*仓库选择下拉框查询接口*/
-    this.warehouseSelect();
-    /*商品名选择下拉框查询接口*/
-    this.commoditySelect();
-    
-    if(this.$route.params.id) {
-       if(this.$route.params.type == 1) {//查看
-         console.log(this.$route.params)
-       } else if(this.$route.params.type == 2) {
-         
+    if(this.$route.query.id) {  //根据id查询详情数据
+       this.getDetai(this.$route.query.id);
+       this.supplierId = this.$route.query.organid;
+       this.oderNumber = this.$route.query.defaultnumber;
+       this.dataPicker = this.$route.query.opertimeStr;
+       this.remarks = this.$route.query.remarks;
+       if(this.$route.query.type == 1) {//查看
+          this.typeStatus = 1;
+       } else if(this.$route.query.type == 2) { //编辑
+         this.typeStatus = 2;
        }
+    } else {
+      // 新增
+      this.typeStatus = 0;
+      /*订单编号*/
+      this.seeOderNumber();
+    }
+    /*判断从哪个页面进来的*/
+    if(this.$route.query.page == 'odrer') {  //采购订单页面
+    } else {  //采购入库页面,采购订单页面
+      /*查询用户账户*/
+      this.getuserAccount();
+      this.Discount = this.$route.query.discount;
+      this.DiscountMoney = this.$route.query.discountMoney;
+      this.DiscountLastMoney = this.$route.query.discountLastMoney;
+      this.Changeamount = this.$route.query.changeamount;
+      this.Accountid = this.$route.query.accountid;
     }
   },
   watch:{
@@ -367,21 +477,53 @@ export default {
           this.$refs['oderules'].resetFields();
       }
     }
-    // tableData:{
-    //   handler(newValue, oldValue) {
-    //      this.tableData.map((item,index) => {
-    //         this.oderPrice = this.oderPrice + parseFloat(item.AllPrice); 
-    //      })
-    //   },
-    //   deep: true
-    // }
   },
   methods: {
+    editDetails(item,index) {
+      console.log('编辑');
+      console.log(item);
+      this.currentIndex = index;
+      this.OderSaveStatus = 1;
+      this.oderForm = JSON.parse(JSON.stringify(item));
+      this.oderDialogVisible = true;
+    },
     getOderPrice(){
        this.oderPrice = 0;
        this.tableData.map((item,index) => {
             this.oderPrice = this.oderPrice + parseFloat(item.AllPrice); 
+            this.TaxLastMoney = this.TaxLastMoney + parseFloat(item.TaxLastMoney); 
          })
+    },
+    /*查看采购订单详细*/
+    async getDetai(id) {
+        let data = {
+          headerId:id,
+          mpList:'规格,颜色,制造商,自定义1,自定义2'
+        }
+        await this.$http.get('/depotItem/getDetailList',data).then(res=>{
+            console.log('查看采购订单详细');
+            console.log(res);
+            if(res.code == 200) {
+              this.tableData = res.data.rows;
+              this.preTotalPrice = 0;
+              res.data.rows.map((item,index) => {
+                 this.preTotalPrice = this.preTotalPrice + parseFloat(item.AllPrice);
+              })
+              this.getOderPrice();
+            } 
+        })
+    },
+    /*查询用户账户*/
+    async getuserAccount() {
+        let data = {
+        }
+        await this.$http.get('/account/getAccount',data).then(res=>{
+            console.log('查询用户账户');
+            console.log(res);
+            if(res.code == 200) {
+               this.userAccountList = res.data.accountList;
+            } 
+        })
     },
     /*保存信息 */
     async save() {
@@ -393,7 +535,7 @@ export default {
          this.$message.error('请输入明细信息');
          return;
        }
-
+       
         let data = {
           info:{
               "Type":"其它",
@@ -403,13 +545,13 @@ export default {
               "DefaultNumber":this.oderNumber,
               "Number":this.oderNumber,
               "LinkNumber":"",
-              "OperTime":"2019-08-20 18:21:02",
+              "OperTime":this.$method.getSTime1(this.dataPicker),
               "OrganId":this.supplierId,
               "HandsPersonId":"",
               "Salesman":"",
               "AccountId":"",
               "ChangeAmount":0,
-              "TotalPrice":0,
+              "TotalPrice":this.oderPrice,
               "PayType":"现付",
               "Remark":this.remarks,
               "AccountMoneyList":"",
@@ -420,7 +562,7 @@ export default {
         },
         inserted:JSON.stringify(this.tableData),
         deleted:JSON.stringify([]),
-        updated:JSON.stringify([])
+        updated:JSON.stringify([])    
       }
         console.log('上传数据');
         console.log(data);
@@ -428,6 +570,70 @@ export default {
             console.log('保存信息');
             console.log(res);
             if(res.code == 200) {
+              this.$message({
+                message: '保存成功',
+                type: 'success'
+              });
+              setTimeout(() => {
+                this.$router.back(-1);
+              },1500)
+            } 
+        })
+
+    },
+    /*修改保存 */
+    async editSave() {
+       if(!this.supplierId) {
+         this.$message.error('请选择供应商');
+         return;
+       }
+       if(!this.tableData.length) {
+         this.$message.error('请输入明细信息');
+         return;
+       }
+        let data = {
+          id:this.$route.query.id,
+          info:{
+              "Type":"其它",
+              "SubType":"采购订单",
+              "ProjectId":null,
+              "AllocationProjectId":null,
+              "DefaultNumber":this.oderNumber,
+              "Number":this.oderNumber,
+              "LinkNumber":"",
+              "OperTime": this.$route.query.opertimeStr == this.dataPicker ?  this.$route.query.opertimeStr : this.$method.getSTime1(this.dataPicker),
+              "OrganId":this.supplierId,
+              "HandsPersonId":"",
+              "Salesman":"",
+              "AccountId":"",
+              "ChangeAmount":0,
+              "TotalPrice":this.oderPrice,
+              "PayType":"现付",
+              "Remark":this.remarks,
+              "AccountMoneyList":"",
+              "Discount":"",
+              "DiscountMoney":"",
+              "DiscountLastMoney":"",
+              "OtherMoney":""
+        },
+        inserted:JSON.stringify([]),
+        deleted:JSON.stringify([]),
+        updated:JSON.stringify(this.tableData),
+        preTotalPrice:this.preTotalPrice
+      }
+        console.log('上传数据');
+        console.log(data);
+        await this.$http.post('/depotHead/updateDepotHeadAndDetail',data).then(res=>{
+            console.log('保存信息');
+            console.log(res);
+            if(res.code == 200) {
+               this.$message({
+                message: '保存成功',
+                type: 'success'
+              });
+              setTimeout(() => {
+                this.$router.back(-1);
+              },1500)
             } 
         })
 
@@ -457,12 +663,24 @@ export default {
       submitForm1(formName) {
         console.log(formName);
         this.$refs[formName].validate((valid) => {
+
+          console.log('this.oderForm');
+          console.log(this.oderForm);
           if (valid) {
-            // this.accountCreationBtn()
-            let obj = JSON.parse(JSON.stringify(this.oderForm))
-            this.tableData.push(obj);
-            console.log('this.tableData');
-            console.log(this.tableData);
+            if(this.OderSaveStatus == 0) {
+                let obj = JSON.parse(JSON.stringify(this.oderForm))
+                this.tableData.push(obj);
+                console.log('this.tableData');
+                console.log(this.tableData);
+
+            } else {
+                console.log('编辑表格');
+                // currentIndex
+                 let obj = JSON.parse(JSON.stringify(this.oderForm))
+                this.tableData.splice(this.currentIndex,1,obj);
+                console.log(this.tableData);
+            }
+
             this.oderDialogVisible = false;
             this.getOderPrice();
           } else {
@@ -607,21 +825,46 @@ export default {
     /*多选*/
     handleSelectionChange(val) {
       this.tableInfo = val;
+      console.log(val);
     },
     add() {
       this.oderDialogVisible = true;
+      this.OderSaveStatus = 0;
+    },
+    remove() {
+      if(!this.tableInfo.length) {
+        this.$message.error('请选择订单');
+        return;
+      }
+      for(let i=0;i<this.tableInfo.length;i++) {
+          for(let j=0;j<this.tableData.length;j++) {
+             if(this.tableInfo[i].Id == this.tableData[j].Id) {
+                this.tableData.splice(j,1);
+             }
+          }
+      }
+// typeStatus
     },
     getSummaries(param) {
       console.log("param");
       console.log(param);
       const { columns, data } = param;
       const sums = [];
+      let sumIndex;
+      if(this.typeStatus == 1) {
+        sumIndex = 7;
+      } else {
+        sumIndex = 8;
+      }
       columns.forEach((column, index) => {
         if (index === 0) {
           sums[index] = "合计";
           return;
-        } else if (index === 7) {
-          sums[index] = this.oderPrice;
+        } else if (index === sumIndex) {
+          sums[sumIndex] = this.oderPrice;
+          return;
+        } if (index === 12 && this.pageName == 'rk') {
+          sums[index] = this.TaxLastMoney;
           return;
         } else {
           sums[index] = "";
@@ -660,6 +903,15 @@ export default {
 #addOrderInfo {
     .el-form-item {
       display: inline-block;
+    }
+    .youhuiForm {
+      position: relative;
+      .fuhao {
+        position: absolute;
+        right: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
     }
     .oderDialog {
       .el-dialog {
