@@ -8,12 +8,27 @@
       <el-form-item>
         <el-button type="primary" @click="getInfo(userName)">查询</el-button>
         <el-button type="primary" @click="getInfo(userName='')">重置</el-button>
-        <el-button type="primary">分配功能</el-button>
-        <el-button type="primary">分配按钮</el-button>
+        <el-button type="primary" @click="DistributionCustomers = false,takecustomers()">分配功能</el-button>
+        <el-button type="primary" @click="AssignmentRoles = false">分配按钮</el-button>
         <el-button type="primary" @click="logFormVisible = true">新增</el-button>
         <el-button v-show="bFlag" type="danger" @click="deleteMoreUser">删除</el-button>
       </el-form-item>
     </el-form>
+    <!-- 分配功能 -->
+    <el-dialog title="分配功能" :visible.sync="DistributionCustomers">
+        <el-button type="primary" round @click="keepCustomers">保存</el-button>
+        <el-tree
+        :data="customers"
+        show-checkbox
+        default-expand-all
+        node-key="id"
+        ref="tree"
+        highlight-current
+        :default-checked-keys=expanded
+         @check-change="handleCheckChange"
+        :props="defaultProps">
+      </el-tree>
+    </el-dialog>
   <!--  修改角色-->
     <el-dialog title="编辑角色信息" :visible.sync="dialogFormVisible">
       <el-form :model="form" ref="form">
@@ -59,8 +74,7 @@
       height="500"
       tooltip-effect="dark"
       style="width: 100%"
-      @selection-change="handleSelectionChange"
-    >
+      @selection-change="handleSelectionChange">
       <el-table-column
         type="selection"
         width="55"
@@ -108,6 +122,7 @@
       layout="sizes, prev, pager, next"
       :page-count="total">
     </el-pagination>
+    <!-- 分配 -->
   </div>
 </template>
 
@@ -118,6 +133,17 @@ export default {
   name: 'Menu3',
   data() {
     return {
+      //分配功能
+      customers:[],
+      expanded:[],
+      defaultProps: {
+          children: 'children',
+          label: 'text',
+          value:'attributes'
+      },
+      DistributionCustomers: false,
+      customersId:[],
+
       userName:'',
       lastName:'',
       classId:'',
@@ -150,6 +176,144 @@ export default {
     this.getInfo()
   },
   methods: {
+    //点击分配客户的按钮
+    takecustomers(){
+      console.log(this.multipleSelection);
+      
+      if(this.multipleSelection === undefined){
+        this.$confirm("请选择一个用户！！！", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {}).catch(() => {});
+      }else{
+        if(this.multipleSelection.length > 1){
+          this.$confirm("只能选择一个用户！！！", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+      }).then(() => {}).catch(() => {});
+        }else if(this.multipleSelection.length === 1){
+          this.DistributionCustomers = true;
+          this.getCustomers()
+          
+        }
+      }
+    },
+    //效验点击新增的新增状态
+    keepCustomers(){
+        let cant  
+        cant = this.customersId
+   
+        
+        let str=""
+        for(var i=0;i <= cant.length-1;i++){
+          str+="["+cant[i]+"]";
+        }
+        
+      this.$http.get(`/userBusiness/checkIsValueExist`,{
+        type:'UserCustomer',
+        keyId: this.multipleSelection[0].id
+      }).then(res=>{
+        console.log(res);
+        if(res.data.id){
+          console.log(111);
+          
+          //修改
+          this.$http.post(`/userBusiness/update?id=${res.data.id}`,{
+            info:{
+              type:"UserCustomer",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+          }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "修改成功"
+          });
+          this.DistributionCustomers = false;
+
+          })
+        }else {          
+          //新增
+        this.$http.post('/userBusiness/add',{
+          info:{
+              type:"UserCustomer",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+        }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "分配成功"
+          });
+          this.DistributionCustomers = false;
+        })
+        }
+      })
+      
+      
+    },
+    //分配功能的复选框状态
+    handleCheckChange(data, checked, indeterminate) {
+      
+        if(checked === true) {
+          this.customersId.push(data.id)
+        }else {
+          this.customersId.splice(this.customersId.findIndex(item => item.id === data.id), 1)  
+        }
+        console.log(this.customersId);
+        
+    },
+    //获取分配功能数据
+    getCustomers(){
+      this.customersId = []
+      this.expanded=[]
+      this.$http.post('/functions/findRoleFunctions',{
+        
+        UBType: 'RoleFunctions',
+        UBKeyId: this.multipleSelection[0].id
+
+      }).then(res=>{
+        
+        this.customers = res[0].children
+       
+       
+        for (let i = 0; i < this.customers.length; i++) {
+          console.log(1111);
+          if(this.customers[i].checked){
+            this.expanded.push(this.customers[i].id)
+            this.customersId.push(this.customers[i].id)
+          }
+          console.log(this.customers[i]);
+          if(this.customers[i].children){
+            for (let j = 0; j < this.customers[i].children.length; j++) {
+
+            if(this.customers[i].children[j].checked){
+              this.expanded.push(this.customers[i].children[j].id)
+              this.customersId.push(this.customers[i].children[j].id)
+              console.log(1111);
+            
+            }
+            for (let k = 0; k < this.customers[i][j].length; k++) {
+              if(this.customers[i][j][k].checked){
+                this.expanded.push(this.customers[i][j][k].id)
+                this.customersId.push(this.customers[i][j][k].id)
+                console.log(2222);
+            
+              }
+              
+            }
+          }
+          }
+          
+        }
+        
+        this.distribution = true;
+      })
+    },
+
+
     //验证用户名否改边
  
 
@@ -278,7 +442,9 @@ export default {
     },
    
     handleSelectionChange(val) {
-      this.multipleSelection = val      
+      this.multipleSelection = val  
+    
+          
     },
     //分页功能
     getInfo(name) {      
@@ -294,7 +460,6 @@ export default {
     },
       handleSelectionChange(val) {
       this.multipleSelection = val
-      // console.log(this.multipleSelection);
       
       if (this.multipleSelection.length >= 2) {
         this.bFlag = true;

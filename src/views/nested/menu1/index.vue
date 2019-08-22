@@ -12,9 +12,9 @@
       <el-form-item>
         <el-button type="primary" @click="getInfo(searchUser,searchName)">查询</el-button>
         <el-button type="primary" @click="moveNull">重置</el-button>
-        <el-button type="primary" @click="AssignmentRoles = distribution">分配角色</el-button>
-        <el-button type="primary" @click="DistributionWarehouse = true">分配仓库</el-button>
-        <el-button type="primary" @click="DistributionCustomers = distribution, takeWarehouse()">分配客户</el-button>
+        <el-button type="primary" @click="AssignmentRoles = false,takeRoles()">分配角色</el-button>
+        <el-button type="primary" @click="DistributionWarehouse = false,takeWarehouse()">分配仓库</el-button>
+        <el-button type="primary" @click="DistributionCustomers = false, takecustomers()">分配客户</el-button>
         <el-button type="primary" @click="dialogFormVisible = true">新增用户</el-button>
         <el-button type="danger" @click="deleteMoreUser" v-show="flager">删除</el-button>
       </el-form-item>
@@ -233,12 +233,14 @@
         node-key="id"
         ref="tree"
         highlight-current
+        :default-checked-keys=expanded
          @check-change="handleCheckChange"
         :props="defaultProps">
       </el-tree>
     </el-dialog>
     <!--  分配仓库-->
-    <el-dialog title="分配客户" :visible.sync="DistributionWarehouse">
+    <el-dialog title="分配仓库" :visible.sync="DistributionWarehouse">
+        <el-button type="primary" round @click="keepWarehouse">保存</el-button>
         <el-tree
         :data="warehouse"
         show-checkbox
@@ -246,12 +248,14 @@
         node-key="id"
         ref="tree"
         highlight-current
+        :default-checked-keys=wareLink
+         @check-change="wareHandleCheckChange"
         :props="defaultProps">
       </el-tree>
     </el-dialog>
     <!--  分配角色-->
-    <el-dialog title="分配客户" :visible.sync="AssignmentRoles">
-        <el-button type="primary" @>保存</el-button>
+    <el-dialog title="分配角色" :visible.sync="AssignmentRoles">
+        <el-button type="primary" round @click="keepRoles">保存</el-button>
         <el-tree
         :data="roles"
         show-checkbox
@@ -259,6 +263,8 @@
         node-key="id"
         ref="tree"
         highlight-current
+        :default-checked-keys=rolesLink
+         @check-change="rolesHandleCheckChange"
         :props="defaultProps">
       </el-tree>
     </el-dialog>
@@ -350,7 +356,7 @@ export default {
         
       },
       props: {
-        value: "id",
+        value: "attributes",
         label: "text",
         children: "children"},
       formLabelWidth: "120px",
@@ -367,21 +373,34 @@ export default {
       userId:'',
       //分配客户
       customers:[],
+      expanded:[],
       defaultProps: {
           children: 'children',
           label: 'text',
           value:'attributes'
         },
         DistributionCustomers: false,
+        customersId:[],
         //分配仓库
+
+        //仓库列表
         warehouse:[],
+        //仓库列表状态选中或不选中
+        wareLink:[],
         props:{
           children: 'children',
           label: 'label'
         },
+        //发送选中状态ID
+        wareId:[],
         DistributionWarehouse: false,
         //分配角色
+        //角色列表
         roles:[],
+        //角色列表状态选中或者不选中
+        rolesLink:[],
+        //发送选中状态id
+        rolesId:[],
         rolesProps:{
           children: 'children',
           label: 'label'
@@ -393,75 +412,357 @@ export default {
     this.getInfo();
      this.loginUser()
      this.getOrganizationTree()
-     this.getCustomers()
+    
   },
   computed:{
     ...mapState(['user'])
   },
   methods: {
     //点击分配客户的按钮
-    takeWarehouse(){
+    takecustomers(){
       console.log(this.multipleSelection);
       
-      // if(this.multipleSelection === ''){
-      //   this.$confirm("请选择一个用户！！！", "提示", {
-      //   confirmButtonText: "确定",
-      //   cancelButtonText: "取消",
-      //   type: "warning"
-      // }).then(() => {}).catch(() => {});
-      // }else{
-      //   if(this.multipleSelection.length > 1){
-      //     this.$confirm("只能选择一个用户！！！", "提示", {
-      //       confirmButtonText: "确定",
-      //       cancelButtonText: "取消",
-      //       type: "warning"
-      // }).then(() => {}).catch(() => {});
-      //   }else{
-      //     this.distribution = true;
-      //   }
-      // }
+      if(this.multipleSelection === undefined){
+        this.$confirm("请选择一个用户！！！", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {}).catch(() => {});
+      }else{
+        if(this.multipleSelection.length > 1){
+          this.$confirm("只能选择一个用户！！！", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+      }).then(() => {}).catch(() => {});
+        }else if(this.multipleSelection.length === 1){
+          this.DistributionCustomers = true;
+          this.getCustomers()
+          
+        }
+      }
     },
     //效验用户的新增状态
-    keepCustomers(id){
-      // this.$http.get(`/userBusiness/checkIsValueExist?type=UserCustomer&keyId=${}`)
+    keepCustomers(){
+      
+      
+        let cant  
+        cant = this.customersId
+   
+        
+        let str=""
+        for(var i=0;i <= cant.length-1;i++){
+          str+="["+cant[i]+"]";
+        }
+        
+      this.$http.get(`/userBusiness/checkIsValueExist`,{
+        type:'UserCustomer',
+        keyId: this.multipleSelection[0].id
+      }).then(res=>{
+        console.log(res);
+        if(res.data.id){
+          console.log(111);
+          
+          //修改
+          this.$http.post(`/userBusiness/update?id=${res.data.id}`,{
+            info:{
+              type:"UserCustomer",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+          }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "修改成功"
+          });
+          this.DistributionCustomers = false;
+
+          })
+        }else {          
+          //新增
+        this.$http.post('/userBusiness/add',{
+          info:{
+              type:"UserCustomer",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+        }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "分配成功"
+          });
+          this.DistributionCustomers = false;
+        })
+        }
+      })
+      
+      
     },
     //分配客户的复选框状态
     handleCheckChange(data, checked, indeterminate) {
-      console.log('*****************');
       
-      console.log(data);
-      console.log(checked);
-      console.log(indeterminate);
-      console.log('*****************');
-
-      // if (this.dataLink.length >= 2) {
-      //   this.flager = true;
-      // } else {
-      //   this.flager = false;
-      // }
+        if(checked === true) {
+          this.customersId.push(data.id)
+        }else {
+          this.customersId.splice(this.customersId.findIndex(item => item.id === data.id), 1)  
+        }
+        console.log(this.customersId);
+        
     },
     //获取分配客户数据
     getCustomers(){
+      this.customersId = []
+      this.expanded=[]
       this.$http.post('/supplier/findUserCustomer',{
         UBType: 'UserCustomer',
-        UBKeyId: this.userId
+        UBKeyId: this.multipleSelection[0].id
 
       }).then(res=>{
         
         this.customers = res.data.children
-      
+       
+        for (let i = 0; i < this.customers.length; i++) {
+          if(this.customers[i].checked){
+            this.expanded.push(this.customers[i].id)
+            this.customersId.push(this.customers[i].id)
+          }
+          
+        }
+        this.distribution = true;
       })
+    },
+    //点击分配仓库按钮
+    takeWarehouse(){
+      if(this.multipleSelection === undefined){
+        this.$confirm("请选择一个用户！！！", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {}).catch(() => {});
+      }else{
+        if(this.multipleSelection.length > 1){
+          this.$confirm("只能选择一个用户！！！", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+      }).then(() => {}).catch(() => {});
+        }else if(this.multipleSelection.length === 1){
+          this.DistributionWarehouse = true;
+          this.getWarehouse()
+          
+        }
+      }
+    },
+    //获取分配仓库列表
+    getWarehouse(){
+      this.wareId=[]
+      this.wareLink=[]
+      this.$http.post('/depot/findUserDepot',{
+        UBType: 'UserDepot',
+        UBKeyId: this.multipleSelection[0].id
+
+      }).then(res=>{
+        
+        this.warehouse = res.data.children
+       
+        for (let i = 0; i < this.warehouse.length; i++) {
+          if(this.warehouse[i].checked){
+            this.wareLink.push(this.warehouse[i].id)
+            this.wareId.push(this.warehouse[i].id)
+          }
+          
+        }
+        this.distribution = true;
+      })
+    },
+    //效验用户的状态
+    keepWarehouse(){
+      
+        let cant  
+        cant = this.wareLink
+   
+        
+        let str=""
+        for(var i=0;i <= cant.length-1;i++){
+          str+="["+cant[i]+"]";
+        }
+        console.log(str);
+        
+      this.$http.get(`/userBusiness/checkIsValueExist`,{
+        type:'UserDepot',
+        keyId: this.multipleSelection[0].id
+      }).then(res=>{
+        console.log(res);
+        if(res.data.id){
+          console.log(111);
+          
+          //修改
+          this.$http.post(`/userBusiness/update?id=${res.data.id}`,{
+            info:{
+              type:"UserDepot",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+          }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "修改成功"
+          });
+          this.DistributionWarehouse = false;
+
+          })
+        }else {          
+          //新增
+        this.$http.post('/userBusiness/add',{
+          info:{
+              type:"UserDepot",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+        }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "分配成功"
+          });
+          this.DistributionWarehouse = false;
+
+        })
+        }
+      })
+      
+    },
+
+    //分配仓库的复选框状态
+    wareHandleCheckChange(data, checked, indeterminate){
+        if(checked === true) {
+          this.wareLink.push(data.id)
+        }else {
+          this.wareLink.splice(this.wareLink.findIndex(item => item.id === data.id), 1)  
+        }
+        console.log(this.wareLink);
+        
+    },
+
+    //点击分配角色按钮
+    takeRoles(){
+      if(this.multipleSelection === undefined){
+        this.$confirm("请选择一个用户！！！", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {}).catch(() => {});
+      }else{
+        if(this.multipleSelection.length > 1){
+          this.$confirm("只能选择一个用户！！！", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+      }).then(() => {}).catch(() => {});
+        }else if(this.multipleSelection.length === 1){
+          
+          this.getRoles()
+          
+        }
+      }
+    },
+    //获取分配角色列表
+    getRoles(){
+      
+      this.rolesId = []
+      this.rolesLink = []
+      this.$http.post('/role/findUserRole',{
+        UBType: 'UserRole',
+        UBKeyId: this.multipleSelection[0].id
+
+      }).then(res=>{
+        console.log(111121212);
+        
+      
+        
+        this.roles = res[0].children
+       
+        for (let i = 0; i < this.roles.length; i++) {
+          if(this.roles[i].checked){
+            this.rolesLink.push(this.roles[i].id)
+            this.rolesId.push(this.roles[i].id)
+          }
+          
+        }
+       this.AssignmentRoles = true;
+      })
+    },
+    //效验用户的状态
+    keepRoles(){
+      
+        let cant  
+        cant = this.rolesLink
+   
+        
+        let str=""
+        for(var i=0;i <= cant.length-1;i++){
+          str+="["+cant[i]+"]";
+        }
+        console.log(str);
+        
+      this.$http.get(`/userBusiness/checkIsValueExist`,{
+        type:'UserRole',
+        keyId: this.multipleSelection[0].id
+      }).then(res=>{
+        console.log(res);
+        if(res.data.id){
+          console.log(111);
+          
+          //修改
+          this.$http.post(`/userBusiness/update?id=${res.data.id}`,{
+            info:{
+              type:"UserRole",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+          }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "修改成功"
+          });
+          this.AssignmentRoles = false;
+
+          })
+        }else {          
+          //新增
+        this.$http.post('/userBusiness/add',{
+          info:{
+              type:"UserRole",
+              keyid:this.multipleSelection[0].id,
+              value:str
+            }
+        }).then(res=>{
+          this.$message({
+            type: "success",
+            message: "分配成功"
+          });
+          this.AssignmentRoles = false;
+
+        })
+        }
+      })
+      
+    },
+    //分配角色的复选框状态
+    rolesHandleCheckChange(data, checked, indeterminate){
+        if(checked === true) {
+          this.rolesLink.push(data.id)
+        }else {
+          this.rolesLink.splice(this.rolesLink.findIndex(item => item.id === data.id), 1)  
+        }
+        console.log(this.rolesLink);
+        
     },
     //点击复选框选择。
      handleChange(value) {
-      
-      this.form.orgParentNo = value[value.length-1];
-      
+      this.form.orgParentNo = value[value.length-1];     
     },
     loginUser(){
-      this.userId = this.user.userInfo.id
-
-      
+      this.userId = this.user.userInfo.id   
       this.LoginName = this.user.userInfo.loginame
 
       this.userCompanyName = this.user.userInfo.companyName
@@ -618,6 +919,8 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val;
       this.displayDel();
+      // console.log(12121212);
+      
       console.log(this.multipleSelection);
       
     },
