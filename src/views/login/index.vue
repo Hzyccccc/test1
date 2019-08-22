@@ -103,12 +103,12 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          
+
          this.$store.dispatch('user/login', {
             loginame : this.loginForm.username,
             password:this.$md5(this.loginForm.password)
-          }).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
+          }).then((res) => {
+           this.$router.push({ path: this.redirect || '/' })
             this.loading = false
           }).catch(() => {
             console.log(4444444)

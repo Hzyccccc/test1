@@ -1,13 +1,17 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
+<<<<<<< HEAD
 import { setUser,getUser } from '@/utils/auth'
+=======
+import { setUser, getUser } from '@/utils/auth'
+>>>>>>> e8c381b0fad6618bac688ae420578f737a7ff42e
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://172.10.0.39:8018', // 黄兴本地
+  // baseURL: 'http://172.10.0.39:8018', // 黄兴本地
   // baseURL: 'http://172.10.0.130:8019', //杜远天本地
-  // baseURL: 'http://172.10.0.26:8019', //周武本地
+  baseURL: 'http://172.10.0.26:8019', //周武本地
 
   timeout: 60000, // request timeout
   // withCredentials: true,
@@ -39,10 +43,17 @@ service.interceptors.request.use(
     }
     console.log('------')
     console.log(store.getters.userInfo)
+<<<<<<< HEAD
     console.log(getUser() ? JSON.parse(getUser()).token : '')
     console.log('------')
     if (store.getters.userInfo) {
       config.headers['X-Token'] = getUser() ? JSON.parse(getUser()).token : ''
+=======
+    console.log(getUser() ? getUser().token : '')
+    console.log('------')
+    if (store.getters.userInfo) {
+      config.headers['X-Token'] = getUser() ? getUser().user.token : ''
+>>>>>>> e8c381b0fad6618bac688ae420578f737a7ff42e
     }
     console.log(config)
     return config
@@ -58,8 +69,16 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   response => {
+<<<<<<< HEAD
     const res = response.data
     return res
+=======
+    if (response.data) {
+      return response.data
+    } else {
+      return response
+    }
+>>>>>>> e8c381b0fad6618bac688ae420578f737a7ff42e
     // if the custom code is not 20000, it is judged as an error.
     /*if (res.code !== 200) {
       Message({
@@ -85,11 +104,15 @@ service.interceptors.response.use(
     } else {
       return res
     }*/
+<<<<<<< HEAD
+=======
+
+>>>>>>> e8c381b0fad6618bac688ae420578f737a7ff42e
   },
   error => {
     console.log(error.code)
 
-    if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1) {
+   /* if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1) {
       Message.error({ message: '请求超时!' })
     } else {
       if (error.response.status === 504 || error.response.status === 404) {
@@ -105,7 +128,7 @@ service.interceptors.response.use(
           Message.error({ message: '未知错误!' })
         }
       }
-    }
+    }*/
     return Promise.reject(error)
   }
 )

@@ -152,6 +152,12 @@ export const constantRoutes = [
         name: 'addOrderInfo',
         meta: { title: '添加采购订单信息', noCache: true },
         hidden: true
+      },
+      {
+        path: 'statisticsEnter',
+        component: () => import('@/views/purchaseAdmin/statisticsEnter'),
+        name: 'statisticsEnter',
+        meta: { title: '进货统计', noCache: true },
       }
     ]
   },
